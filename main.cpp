@@ -46,7 +46,7 @@ void ProfileFunctions() {
 
     time_point currTime = system_clock::now();
     auto timeNow = system_clock::to_time_t(currTime); //C++11 tho, where is C++20, formatting?
-    ofstream logFile("profileLog.txt");
+    ofstream logFile("profileLog.txt", fstream::app);
 
     logFile << "[ " << input << " ]" << "\n" << ctime(&timeNow) << "\n";
 
@@ -57,7 +57,7 @@ void ProfileFunctions() {
     }
     auto stop = high_resolution_clock::now();
     time = static_cast<double>(duration_cast<microseconds>(stop - start).count()) / 1000;
-    logFile << "Average LocalMapGen Time: \t" << time / iterations << " ms\n";
+    logFile << "Avg LocalMapGen Time: \t\t" << time / iterations << " ms\n";
 
     // Profile LocalTerraGen
     start = high_resolution_clock::now();
@@ -66,7 +66,7 @@ void ProfileFunctions() {
     }
     stop = high_resolution_clock::now();
     time = static_cast<double>(duration_cast<microseconds>(stop - start).count()) / 1000;
-    logFile << "Average LocalTerraGen Time: \t" << time / iterations << " ms\n";
+    logFile << "Avg LocalTerraGen Time: \t" << time / iterations << " ms\n";
 
     // Profile LocalFeatureGen
     start = high_resolution_clock::now();
@@ -75,7 +75,7 @@ void ProfileFunctions() {
     }
     stop = high_resolution_clock::now();
     time = static_cast<double>(duration_cast<microseconds>(stop - start).count()) / 1000;
-    logFile << "Average LocalFeatureGen Time: \t" << time / iterations << " ms\n";
+    logFile << "Avg LocalFeatureGen Time: \t" << time / iterations << " ms\n";
 
     logFile << "\n";
     logFile.close();
@@ -97,7 +97,7 @@ int main() {
 
     mapThread.join(); // Wait for map to finish - wil remove this and the print and go into menu
 
-//    Draw();
+    Draw();
 
 //    cin.ignore(); // Wait for user input before ending
     return 0;
@@ -161,28 +161,15 @@ void LocalFeatureGen() {
     uniform_int_distribution<int> dist32(0, LMAP - 1);
     auto d32 = bind(dist32, ranGen);
 
-    uniform_int_distribution<int> dist1000(1, 1000);
-    auto d1000 = bind(dist1000, ranGen);
-
 
     //Forest chance 1/500
-    int mapSize = LMAP * LMAP;
-    int rolls = mapSize / 500 + 1; //Max forests
+    int mapSize = LMAP * LMAP;//Max forests
+    int rolls = mapSize / 500 + 1;
     //cout << "Num Forest Rolls: " << rolls << "\n";
 
     //Iterate through whole thing for now, annoying, implement some dice globally?
-    for (int y = 0; y < LMAP; y++) {
-        for (int x = 0; x < LMAP; x++) {
-            if (rolls > 0) {
-                if (d1000() <= 2) { // 1/500 | 0.2%
-                    worldMap[y][x] = FOREST;
-                    // do genForest() function instead
-                    rolls--;
-                }
-            } else {
-                break;
-            }
-        }
+    for (; rolls > 0; rolls--) {
+        worldMap[d32()][d32()] = FOREST;
     }
 }
 
