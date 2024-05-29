@@ -16,7 +16,7 @@ using namespace std::chrono_literals;
 using namespace std::chrono;
 
 enum terrain {
-    PLAINS, FOREST
+    PLAINS, FOREST, FCENTER
 };
 
 const int LMAP = 32; // Size of initial map
@@ -31,6 +31,7 @@ int GameTick();
 void LocalMapGen(); //Generates local map
 void LocalTerraGen();  // Generates terrain
 void LocalFeatureGen(); // Generates features (forest)
+void GenerateForest(const int x, const int y);
 
 void Draw();
 
@@ -87,9 +88,9 @@ int main() {
     //Ask to log, with message, and will also make comparison automatically?
     jthread mapThread(LocalMapGen); // Start generating local map
 
-    cout << "Profile? (y/n):\n> ";
-    cin >> input;
-    if (input == 'y') {
+//    cout << "Profile? (y/n):\n> ";
+//    cin >> input;
+    if (false) {
         jthread profileThread(ProfileFunctions);
     }
 
@@ -99,7 +100,7 @@ int main() {
 
     Draw();
 
-//    cin.ignore(); // Wait for user input before ending
+    cin.ignore(); // Wait for user input before ending
     return 0;
 }
 
@@ -169,7 +170,65 @@ void LocalFeatureGen() {
 
     //Iterate through whole thing for now, annoying, implement some dice globally?
     for (; rolls > 0; rolls--) {
-        worldMap[d32()][d32()] = FOREST;
+        GenerateForest(d32(), d32());
+    }
+}
+
+void GenerateForest(const int x, const int y) {
+    worldMap[y][x] = FCENTER;
+    static uniform_int_distribution<int> dist100(0, 99);
+    static auto d100 = bind(dist100, ranGen);
+
+    const double eProb = 0.9; //Probability of first expansion
+    double currProb = 1;
+    int cx, cy;
+
+
+    //Probably a simpler way of doing this
+    // Maybe some sort of amorphous sphere noise map?
+    // Also forestNode?
+
+    // Expand Left
+    for (cx = x - 1; cx >= 0; cx--) {
+        currProb *= eProb;
+        if (d100() < currProb * 100) {
+            worldMap[y][cx] = FOREST;
+        } else {
+            break;
+        }
+    }
+
+    currProb = 1;
+    //Expand Right
+    for (cx = x + 1; cx < LMAP; cx++) {
+        currProb *= eProb;
+        if (d100() < currProb * 100) {
+            worldMap[y][cx] = FOREST;
+        } else {
+            break;
+        }
+    }
+
+    currProb = 1;
+    //Expand Up
+    for (cy = y - 1; cy >= 0; cy--) {
+        currProb *= eProb;
+        if (d100() < currProb * 100) {
+            worldMap[cy][x] = FOREST;
+        } else {
+            break;
+        }
+    }
+
+    currProb = 1;
+    //Expand Down
+    for (cy = y + 1; cy < LMAP; cy++) {
+        currProb *= eProb;
+        if (d100() < currProb * 100) {
+            worldMap[cy][x] = FOREST;
+        } else {
+            break;
+        }
     }
 }
 
@@ -177,7 +236,21 @@ void Draw() {
     // Printing map
     for (int y = 0; y < LMAP; y++) {
         for (int x = 0; x < LMAP; x++) {
-            cout << ((worldMap[y][x] == 0) ? "_ " : "F ");
+            //Make this pairs with keys
+            switch (worldMap[y][x]) {
+                case PLAINS:
+                    cout << "_ ";
+                    break;
+                case FOREST:
+                    cout << "F ";
+                    break;
+                case FCENTER:
+                    cout << "C ";
+                    break;
+                default:
+                    cout << "? ";
+                    break;
+            }
         }
         cout << "\n";
     }
@@ -186,8 +259,9 @@ void Draw() {
 
 
 /** TODO
- MEASURE EXECUTION TIME OF EVERYTHING.
- LOGS? DEBUG MODE? Custom log message at the start of every one like (Change Terrain to Noise)
+ Measure time execution of GenerateForest
+ Fill in GenerateForest, then maybe switch to noisemap or something
+ ForestNodes + resource tracking, stats
  Work on map generator, forest gen
  Make TaskManager
  Timeline system
@@ -196,8 +270,7 @@ void Draw() {
  OPTIMIZATION!!
  CLASSES? Class for map?
  Implement Menu
- genForest() function
- Global dice?
  MORE FUNCTIONS, LESS NESTING, SIMPLE FUNCTIONS
  Figure out formatting library, mutex, atomic
+ Make Forest "Node" that keeps track of stats and updates? Also has map of forest. Simple 0 / 1 binary map
 **/

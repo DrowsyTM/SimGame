@@ -12,3 +12,10 @@ Avg LocalMapGen Time: 		0.000824 ms
 Avg LocalTerraGen Time: 	0.000682 ms
 Avg LocalFeatureGen Time: 	9.1e-05 ms
 
+[ Implemented GenerateForest with temp cross shape ]
+Wed May 29 01:44:52 2024
+
+Avg LocalMapGen Time: 		0.001467 ms
+Avg LocalTerraGen Time: 	0.000698 ms
+Avg LocalFeatureGen Time: 	0.000763 ms
+
