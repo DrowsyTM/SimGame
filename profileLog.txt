@@ -26,3 +26,23 @@ Avg LocalMapGen Time: 		0.001387 ms
 Avg LocalTerraGen Time: 	0.0007 ms
 Avg LocalFeatureGen Time: 	0.000713 ms
 
+[ New Forest func + MergeFeatures onto map ]
+Wed May 29 13:55:50 2024
+
+Avg LocalMapGen Time: 		0.923739 ms
+Avg LocalTerraGen Time: 	0.000755 ms
+Avg LocalFeatureGen Time: 	0.012077 ms
+Avg MergeFeature Time:  	0.004171 ms
+
+
+[ Added Profiling to GenerateForest ]
+Wed May 29 14:03:06 2024
+
+Avg LocalMapGen Time: 		0.906283 ms
+Avg LocalTerraGen Time: 	0.001458 ms
+Avg LocalFeatureGen Time: 	0.01144 ms
+Avg GenerateForest Time: 	0.004048 ms
+Avg MergeFeature Time: 		0.000632 ms
+
+
+

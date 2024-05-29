@@ -9,6 +9,7 @@
 #include <functional> //Used for bind function
 #include <memory> //unique_ptr, etc - safe pointers
 #include <format>
+#include <vector>
 
 
 using namespace std;
@@ -26,12 +27,20 @@ terrain worldMap[LMAP][LMAP]; //2D enum array of size LMAP - should be much larg
 // Also iteration would be nice and simplifies code
 default_random_engine ranGen(system_clock::now().time_since_epoch().count());
 
+struct ForestNode {
+    int x, y;
+    bool map[15][15];
+};
+vector<ForestNode> forestList;
+
 int GameTick();
 
 void LocalMapGen(); //Generates local map
 void LocalTerraGen();  // Generates terrain
 void LocalFeatureGen(); // Generates features (forest)
 void GenerateForest(const int x, const int y);
+
+void MergeFeatures();
 
 void Draw();
 
@@ -51,6 +60,7 @@ void ProfileFunctions() {
 
     logFile << "[ " << input << " ]" << "\n" << ctime(&timeNow) << "\n";
 
+    forestList.resize(5000);
     // Profile LocalMapGen
     auto start = high_resolution_clock::now();
     for (int i = 0; i < iterations; ++i) {
@@ -78,6 +88,27 @@ void ProfileFunctions() {
     time = static_cast<double>(duration_cast<microseconds>(stop - start).count()) / 1000;
     logFile << "Avg LocalFeatureGen Time: \t" << time / iterations << " ms\n";
 
+    forestList.clear();
+    //Profile GenerateForest
+    uniform_int_distribution<int> dist32(0, 31);
+    start = high_resolution_clock::now();
+    auto d32 = bind(dist32, ranGen);
+    for (int i = 0; i < iterations; ++i) {
+        GenerateForest(d32(), d32());
+    }
+    stop = high_resolution_clock::now();
+    time = static_cast<double>(duration_cast<microseconds>(stop - start).count()) / 1000;
+    logFile << "Avg GenerateForest Time: \t" << time / iterations << " ms\n";
+
+    // Profile MergeFeatures
+    cout << "Nodes: " << forestList.size() << "\n";
+    start = high_resolution_clock::now();
+    MergeFeatures();
+    stop = high_resolution_clock::now();
+    time = static_cast<double>(duration_cast<microseconds>(stop - start).count()) / 1000;
+    logFile << "Avg MergeFeature Time: \t\t" << time / iterations << " ms\n";
+
+
     logFile << "\n";
     logFile.close();
 }
@@ -85,7 +116,6 @@ void ProfileFunctions() {
 int main() {
     char input;
 
-    //Ask to log, with message, and will also make comparison automatically?
     jthread mapThread(LocalMapGen); // Start generating local map
 
 //    cout << "Profile? (y/n):\n> ";
@@ -98,7 +128,7 @@ int main() {
 
     mapThread.join(); // Wait for map to finish - wil remove this and the print and go into menu
 
-    Draw();
+//    Draw();
 
     cin.ignore(); // Wait for user input before ending
     return 0;
@@ -121,10 +151,12 @@ int GameTick() {
 
 
 // Pre-generates local play area (reduce loading time & load rest of map later)
+// Need to start near middle of map or something. Or random spot
 void LocalMapGen() {
     //int result = distribution(ranGen);
     LocalTerraGen();
     LocalFeatureGen();
+    MergeFeatures();
 }
 
 //Figure out how to make all this work for GlobalMap. Maybe a "chunk" system? Rolls per chunk for feature?
@@ -159,8 +191,8 @@ void LocalTerraGen() {
 void LocalFeatureGen() {
     //For features, rather than iterate, we can just aim for a random spot since we don't fill everything
 
-    uniform_int_distribution<int> dist32(0, LMAP - 1);
-    auto d32 = bind(dist32, ranGen);
+    static uniform_int_distribution<int> dist32(0, LMAP - 1);
+    static auto d32 = bind(dist32, ranGen);
 
 
     //Forest chance 1/500
@@ -175,74 +207,45 @@ void LocalFeatureGen() {
 }
 
 void GenerateForest(const int x, const int y) {
-    worldMap[y][x] = FCENTER;
-    static uniform_int_distribution<int> dist100(1, 100);
-    static auto d100 = bind(dist100, ranGen);
+    static uniform_int_distribution<int> dist02(-1, 1);
+    static auto d02 = bind(dist02, ranGen);
 
-    const double eProb = 0.7; //Probability of first expansion
-    double currProb = 1;
-    int cx, cy;
-//     if difference between cx & x > 3 then just keep adding.
+    ForestNode newForest;
+    newForest.x = x;
+    newForest.y = y;
 
+    static int iy, ix;
+    for (int y = 0; y < 15; y++) {
+        iy = y - 7 + d02();
+        for (int x = 0; x < 15; x++) {
+            ix = x - 7 + d02();
 
-    //Probably a simpler way of doing this
-    // Maybe some sort of amorphous sphere noise map?
+            if ((abs(iy) + abs(ix)) * 0.1 < 0.5) {
+                newForest.map[y][x] = 1;
+            } else {
+                newForest.map[y][x] = 0;
+            }
+        }
+    }
+    forestList.push_back(newForest);
+
     // Also forestNode?
-    // If not noise then 100% change how falloff works. It should be 2-3 minimum. No 10% chance to have none.
-    // Can just d
-    // Expand Left
-    for (cx = x - 1; cx >= 0; cx--) {
-        if (x - cx < 3) {
-            worldMap[y][cx] = FOREST;
-        }
-        else if (d100() < currProb * 100) {
-            worldMap[y][cx] = FOREST;
-            currProb *= eProb;
-        } else {
-            break;
-        }
+    // Node gets its own map. Function that takes this map and puts it onto world?
 
-    }
+}
 
-    currProb = 1;
-    //Expand Right
-    for (cx = x + 1; cx < LMAP; cx++) {
-        if (cx - x < 3) {
-            worldMap[y][cx] = FOREST;
-        }
-        else if (d100() < currProb * 100) {
-            worldMap[y][cx] = FOREST;
-            currProb *= eProb;
-        } else {
-            break;
-        }
-    }
-
-    currProb = 1;
-    //Expand Up
-    for (cy = y - 1; cy >= 0; cy--) {
-        if (y - cy < 3) {
-            worldMap[cy][x] = FOREST;
-        }
-        else if (d100() < currProb * 100) {
-            worldMap[cy][x] = FOREST;
-            currProb *= eProb;
-        } else {
-            break;
-        }
-    }
-
-    currProb = 1;
-    //Expand Down
-    for (cy = y + 1; cy < LMAP; cy++) {
-        if (cy - y < 3) {
-            worldMap[cy][x] = FOREST;
-        }
-        else if (d100() < currProb * 100) {
-            worldMap[cy][x] = FOREST;
-            currProb *= eProb;
-        } else {
-            break;
+void MergeFeatures() {
+    //Just write local map -> world map translation function?
+    //Maybe make it part of Forest function
+    for (ForestNode node: forestList) {
+        for (int y = 0; y < 15; y++) {
+            bool validY = y + node.y - 7 >= 0 && y + node.y - 7 < LMAP;
+            for (int x = 0; x < 15; x++) {
+                bool validX = node.map[y][x] == true && x + node.x - 7 >= 0 && x + node.x - 7 < LMAP;
+                if (validX && validY) {
+                    worldMap[y + node.y - 7][x + node.x - 7] = FOREST;
+                }
+            }
         }
     }
 }
@@ -275,6 +278,7 @@ void Draw() {
 
 /** TODO
  Measure time execution of GenerateForest
+ Fix GenerateForest somehow bloating LocalMapGen (figure out threading for world gen as well)
  Fill in GenerateForest, then maybe switch to noisemap or something
  ForestNodes + resource tracking, stats
  Ooh maybe spawn ForestNode, it generates itself, merges if need be, etc?
