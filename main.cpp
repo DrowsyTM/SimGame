@@ -90,7 +90,7 @@ int main() {
 
 //    cout << "Profile? (y/n):\n> ";
 //    cin >> input;
-    if (false) {
+    if (true) {
         jthread profileThread(ProfileFunctions);
     }
 
@@ -176,34 +176,43 @@ void LocalFeatureGen() {
 
 void GenerateForest(const int x, const int y) {
     worldMap[y][x] = FCENTER;
-    static uniform_int_distribution<int> dist100(0, 99);
+    static uniform_int_distribution<int> dist100(1, 100);
     static auto d100 = bind(dist100, ranGen);
 
-    const double eProb = 0.9; //Probability of first expansion
+    const double eProb = 0.7; //Probability of first expansion
     double currProb = 1;
     int cx, cy;
+//     if difference between cx & x > 3 then just keep adding.
 
 
     //Probably a simpler way of doing this
     // Maybe some sort of amorphous sphere noise map?
     // Also forestNode?
-
+    // If not noise then 100% change how falloff works. It should be 2-3 minimum. No 10% chance to have none.
+    // Can just d
     // Expand Left
     for (cx = x - 1; cx >= 0; cx--) {
-        currProb *= eProb;
-        if (d100() < currProb * 100) {
+        if (x - cx < 3) {
             worldMap[y][cx] = FOREST;
+        }
+        else if (d100() < currProb * 100) {
+            worldMap[y][cx] = FOREST;
+            currProb *= eProb;
         } else {
             break;
         }
+
     }
 
     currProb = 1;
     //Expand Right
     for (cx = x + 1; cx < LMAP; cx++) {
-        currProb *= eProb;
-        if (d100() < currProb * 100) {
+        if (cx - x < 3) {
             worldMap[y][cx] = FOREST;
+        }
+        else if (d100() < currProb * 100) {
+            worldMap[y][cx] = FOREST;
+            currProb *= eProb;
         } else {
             break;
         }
@@ -212,9 +221,12 @@ void GenerateForest(const int x, const int y) {
     currProb = 1;
     //Expand Up
     for (cy = y - 1; cy >= 0; cy--) {
-        currProb *= eProb;
-        if (d100() < currProb * 100) {
+        if (y - cy < 3) {
             worldMap[cy][x] = FOREST;
+        }
+        else if (d100() < currProb * 100) {
+            worldMap[cy][x] = FOREST;
+            currProb *= eProb;
         } else {
             break;
         }
@@ -223,9 +235,12 @@ void GenerateForest(const int x, const int y) {
     currProb = 1;
     //Expand Down
     for (cy = y + 1; cy < LMAP; cy++) {
-        currProb *= eProb;
-        if (d100() < currProb * 100) {
+        if (cy - y < 3) {
             worldMap[cy][x] = FOREST;
+        }
+        else if (d100() < currProb * 100) {
+            worldMap[cy][x] = FOREST;
+            currProb *= eProb;
         } else {
             break;
         }
@@ -262,6 +277,7 @@ void Draw() {
  Measure time execution of GenerateForest
  Fill in GenerateForest, then maybe switch to noisemap or something
  ForestNodes + resource tracking, stats
+ Ooh maybe spawn ForestNode, it generates itself, merges if need be, etc?
  Work on map generator, forest gen
  Make TaskManager
  Timeline system

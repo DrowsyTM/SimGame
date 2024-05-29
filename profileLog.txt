@@ -19,3 +19,10 @@ Avg LocalMapGen Time: 		0.001467 ms
 Avg LocalTerraGen Time: 	0.000698 ms
 Avg LocalFeatureGen Time: 	0.000763 ms
 
+[ Made all crosses generate larger, going to go for noise ]
+Wed May 29 12:39:02 2024
+
+Avg LocalMapGen Time: 		0.001387 ms
+Avg LocalTerraGen Time: 	0.0007 ms
+Avg LocalFeatureGen Time: 	0.000713 ms
+
