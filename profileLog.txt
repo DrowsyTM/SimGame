@@ -1,0 +1,7 @@
+[ First Profile (1/500 Forest Generator) ]
+Wed May 29 00:48:35 2024
+
+Average LocalMapGen Time: 	0.013927 ms
+Average LocalTerraGen Time: 	0.000716 ms
+Average LocalFeatureGen Time: 	0.012984 ms
+

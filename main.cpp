@@ -8,6 +8,8 @@
 #include <random> //Random generator
 #include <functional> //Used for bind function
 #include <memory> //unique_ptr, etc - safe pointers
+#include <format>
+
 
 using namespace std;
 using namespace std::chrono_literals;
@@ -22,10 +24,7 @@ const int LMAP = 32; // Size of initial map
 terrain worldMap[LMAP][LMAP]; //2D enum array of size LMAP - should be much larger than LMAP
 // Maybe create custom class for it to create custom behavior
 // Also iteration would be nice and simplifies code
-
-default_random_engine ranGen(chrono::system_clock::now().time_since_epoch().count());
-
-bool debug = true;
+default_random_engine ranGen(system_clock::now().time_since_epoch().count());
 
 int GameTick();
 
@@ -36,9 +35,20 @@ void LocalFeatureGen(); // Generates features (forest)
 void Draw();
 
 void ProfileFunctions() {
-    cout << "Profile of all Functions\n\n";
+
     const int iterations = 1000;
     double time = 0; //ms
+
+    string input;
+    cout << "Custom Message:\n> ";
+    cin.sync();
+    getline(cin, input);
+
+    time_point currTime = system_clock::now();
+    auto timeNow = system_clock::to_time_t(currTime); //C++11 tho, where is C++20, formatting?
+    ofstream logFile("profileLog.txt");
+
+    logFile << "[ " << input << " ]" << "\n" << ctime(&timeNow) << "\n";
 
     // Profile LocalMapGen
     auto start = high_resolution_clock::now();
@@ -47,7 +57,7 @@ void ProfileFunctions() {
     }
     auto stop = high_resolution_clock::now();
     time = static_cast<double>(duration_cast<microseconds>(stop - start).count()) / 1000;
-    cout << "Average LocalMapGen Time: \t" << time / iterations << " ms\n";
+    logFile << "Average LocalMapGen Time: \t" << time / iterations << " ms\n";
 
     // Profile LocalTerraGen
     start = high_resolution_clock::now();
@@ -56,7 +66,7 @@ void ProfileFunctions() {
     }
     stop = high_resolution_clock::now();
     time = static_cast<double>(duration_cast<microseconds>(stop - start).count()) / 1000;
-    cout << "Average LocalTerraGen Time: \t" << time / iterations << " ms\n";
+    logFile << "Average LocalTerraGen Time: \t" << time / iterations << " ms\n";
 
     // Profile LocalFeatureGen
     start = high_resolution_clock::now();
@@ -65,23 +75,31 @@ void ProfileFunctions() {
     }
     stop = high_resolution_clock::now();
     time = static_cast<double>(duration_cast<microseconds>(stop - start).count()) / 1000;
-    cout << "Average LocalFeatureGen Time: \t" << time / iterations << " ms\n";
+    logFile << "Average LocalFeatureGen Time: \t" << time / iterations << " ms\n";
+
+    logFile << "\n";
+    logFile.close();
 }
 
 int main() {
+    char input;
 
-    if (debug) {
+    //Ask to log, with message, and will also make comparison automatically?
+    jthread mapThread(LocalMapGen); // Start generating local map
+
+    cout << "Profile? (y/n):\n> ";
+    cin >> input;
+    if (input == 'y') {
         jthread profileThread(ProfileFunctions);
     }
 
-    jthread mapThread(LocalMapGen); // Start generating local map
     cout << "Generating Local Map...\n";
 
     mapThread.join(); // Wait for map to finish - wil remove this and the print and go into menu
 
 //    Draw();
 
-    cin.ignore(); // Wait for user input before ending
+//    cin.ignore(); // Wait for user input before ending
     return 0;
 }
 
@@ -103,13 +121,9 @@ int GameTick() {
 
 // Pre-generates local play area (reduce loading time & load rest of map later)
 void LocalMapGen() {
-
     //int result = distribution(ranGen);
-
     LocalTerraGen();
     LocalFeatureGen();
-
-
 }
 
 //Figure out how to make all this work for GlobalMap. Maybe a "chunk" system? Rolls per chunk for feature?
@@ -144,11 +158,11 @@ void LocalTerraGen() {
 void LocalFeatureGen() {
     //For features, rather than iterate, we can just aim for a random spot since we don't fill everything
 
-    uniform_int_distribution<int> dist32(0, LMAP-1);
+    uniform_int_distribution<int> dist32(0, LMAP - 1);
     auto d32 = bind(dist32, ranGen);
 
     uniform_int_distribution<int> dist1000(1, 1000);
-    auto d1000 = bind(dist1000,ranGen);
+    auto d1000 = bind(dist1000, ranGen);
 
 
     //Forest chance 1/500
@@ -198,4 +212,5 @@ void Draw() {
  genForest() function
  Global dice?
  MORE FUNCTIONS, LESS NESTING, SIMPLE FUNCTIONS
+ Figure out formatting library, mutex, atomic
 **/
