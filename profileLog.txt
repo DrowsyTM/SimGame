@@ -61,3 +61,20 @@ Avg MergeFeature Time: 		0.000637 ms
 Avg WorldMap Build Time:    0.292939 ms
 Avg WorldMap Draw Time: 	81.2757 ms
 
+[ Using Stringstream for Draw ]
+Wed May 29 18:22:00 2024
+
+Avg LocalFeatureGen Time: 	0.011226 ms
+Avg GenerateForest Time: 	0.003702 ms
+Avg MergeFeature Time: 		0.000636 ms
+Avg WorldMap Build Time: 	0.304562 ms
+Avg WorldMap Draw Time: 	0.685893 ms
+
+[ Outside IDE ]
+Wed May 29 18:22:43 2024
+
+Avg LocalFeatureGen Time: 	0.011142 ms
+Avg GenerateForest Time: 	0.00362 ms
+Avg MergeFeature Time: 		0.000632 ms
+Avg WorldMap Build Time: 	0.459432 ms
+Avg WorldMap Draw Time: 	0.332623 ms

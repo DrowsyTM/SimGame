@@ -19,35 +19,38 @@ void WorldMap::generateTerrain() {
 WorldMap::~WorldMap() {}
 
 void WorldMap::draw() {
+
+    std::stringstream ss;
     int xOffset = lookX - (screenSize - 1) / 2;
     int yOffset = lookY - (screenSize - 1) / 2;
 
-    std::cout << "[ " << lookX << ", " << lookY << " ]\n";
+    ss << "[ " << lookX << ", " << lookY << " ]\n";
     for (int y = 0; y < screenSize; y++) {
         for (int x = 0; x < screenSize; x++) {
             if (x == (screenSize - 1) / 2 && y == (screenSize - 1) / 2) {
-                std::cout << "v ";
+                ss << "v ";
             } else {
                 //Make this pairs with keys
                 switch (map[y + yOffset][x + xOffset]) {
                     case PLAINS:
-                        std::cout << "_ ";
+                        ss << "_ ";
                         break;
                     case FOREST:
-                        std::cout << "F ";
+                        ss << "F ";
                         break;
                     case FCENTER:
-                        std::cout << "C ";
+                        ss << "C ";
                         break;
                     default:
-                        std::cout << "? ";
+                        ss << "? ";
                         break;
                 }
             }
         }
-        std::cout << "\n";
+        ss << "\n";
     }
-    std::cout << "\n" << std::endl;
+    ss << "\n";
+    std::cout << ss.str() << std::endl;
 }
 
 void WorldMap::set(terrain type, int x, int y) {

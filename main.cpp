@@ -231,6 +231,7 @@ void MergeFeatures() {
 
 
 /** TODO
+ Put text into buffer, then output
  Maybe make abstract class for all features?
  Measure time execution of GenerateForest
  Fix GenerateForest somehow bloating LocalMapGen (figure out threading for world gen as well)
