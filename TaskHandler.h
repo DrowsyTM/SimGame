@@ -4,6 +4,10 @@
 #include <vector>
 #include "WorldMap.h"
 #include "Task.h"
+#include <atomic>
+#include <condition_variable>
+#include <queue>
+#include <memory>
 
 class TaskHandler {
 public:
@@ -12,12 +16,16 @@ public:
 
     void taskMapGeneration(WorldMap map);
 private:
-    std::vector<std::thread> workers;
-    std::vector<Task> queue; //use something else, Vector slow due to thread safety
+    std::vector<std::jthread> workers;
+    std::vector<std::unique_ptr<Task>> tasks; //use something else, Vector slow due to thread safety
+    std::vector<std::mutex> locks;
     int numThreads;
 
+
     void workerThread();
-//    std::vector<TaskTerrainGen> mapChunkFactory(int mapX, int mapY);
+    std::optional<std::unique_ptr<Task>> getNext();
+    bool tryLock(int index);
+    // Join all threads function?
 };
 
 

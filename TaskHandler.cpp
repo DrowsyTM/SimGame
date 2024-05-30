@@ -1,30 +1,47 @@
 #include "TaskHandler.h"
 
-TaskHandler::TaskHandler() : queue{}, numThreads{12} {
-
+TaskHandler::TaskHandler() : tasks{}, locks{}, numThreads{10} {
+    for (int i = 0; i < numThreads; i++) {
+        workers.push_back(std::jthread([this]() { this->workerThread(); }));
+    }
 }
 
-TaskHandler::~TaskHandler() {
+TaskHandler::~TaskHandler() {}
 
-}
-
-void TaskHandler::taskMapGeneration(WorldMap map) {
-//    mapChunkFactory(map.size(), map.size());
-
-}
-
-// Private
+//---------------Private-------------------
 void TaskHandler::workerThread() {
     // loops until work exists (conditional variable?)
+    while (true) {
+        break;
+        getNext()->get()->execute();
+        //somehow delete the task from vector?
+        locks[-1].unlock(); //how do I get the index of the task I just did
+    }
 }
 
-//std::vector<TaskTerrainGen> TaskHandler::mapChunkFactory(int mapX, int mapY) {
-//    return std::vector<TaskTerrainGen>();
-//}
+std::optional<std::unique_ptr<Task>> TaskHandler::getNext() {
+    for (int i = 0; i < tasks.size(); i++){
+        if (tryLock(i)){
+            return std::move(tasks[i]); //Hopefully this gives ownership of the task to the workerThread
+            //Hmm how do we unlock and how do we clear out this task
+        }
+    }
+    return std::nullopt;
+}
 
+bool TaskHandler::tryLock(int index) {
+    if (locks[index].try_lock()) {
+        return true;
+    }
+    return false;
+}
 
-std::vector<Task> mapChunkFactory(int mapX, int mapY) {
-
+//---------------Work with External Objects-------------------
+void TaskHandler::taskMapGeneration(WorldMap map) {
+    int num_chunks = map.numChunks();
+    for (int i = 0; i < num_chunks; i++) {
+        tasks.push_back(std::make_unique<TaskTerrainGen>(i, &map));
+    }
 }
 
 
