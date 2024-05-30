@@ -11,6 +11,8 @@
 
 #include "WorldMap.h"
 
+const int MAP_DIMENSION_UPPER_LIMIT = 15000;
+
 using namespace std;
 using namespace std::chrono_literals;
 using namespace std::chrono;
@@ -231,7 +233,7 @@ void MergeFeatures() {
 
 
 /** TODO
- Put text into buffer, then output
+ Save each seperate line of description, then paste it between map draws?
  Maybe make abstract class for all features?
  Measure time execution of GenerateForest
  Fix GenerateForest somehow bloating LocalMapGen (figure out threading for world gen as well)
@@ -240,7 +242,7 @@ void MergeFeatures() {
  ForestNodes + resource tracking, stats
  Ooh maybe spawn ForestNode, it generates itself, merges if need be, etc?
  Work on map generator, forest gen
- Make TaskManager
+ Make TaskHandler
  Timeline system
  Figure out layers (FOREST probably shouldn't be a terrain tile)
  Forest mechanics, balancing, wood, plants, animals, prey, predator, hunting, monsters

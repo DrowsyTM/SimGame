@@ -19,35 +19,42 @@ private:
 };
 
 class WorldMap {
-private:
-    std::vector<std::vector<terrain>> map;
-    int maxSize;
-    int lookX, lookY;
-    int screenSize;
-
-    void generateTerrain();
-
-    void spawnRandomzier(int &x, int &y);
-
 public:
     WorldMap(); //Uses default map size
     WorldMap(int size);
 
     ~WorldMap();
 
-    void draw();
+    void draw() const;
 
     void set(terrain type, int x, int y);
 
-    int x();
+    int x() const;
 
-    int y();
+    int y() const;
+
+    int size() const;
 
     void clear();
 
-    bool isEmpty();
+    bool isEmpty() const;
 
+    int chunkSize() const;
 
+private:
+    std::vector<std::vector<terrain>> map;
+    int maxSize;
+    int lookX, lookY;
+    int screenSize;
+    bool initialized;
+    int chunk_size;
+
+    void generateTerrain();
+    void threadGenerateTerrain(); //or just add overload to generateTerrain that allows specification of where to gen
+    //hmm should WorldMap track chunks for them? Or is this tracked in TaskHandler?
+    void updateLayer();
+
+    void spawnRandomzier(int &x, int &y);
 };
 
 #endif //SIMGAME_WORLDMAP_H
