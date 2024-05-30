@@ -26,7 +26,6 @@ class TaskTerrainGen : public Task {
 public:
     TaskTerrainGen(int chunk, WorldMap* mapPointer);
     void execute() override;
-    // or maybe some of the passed info is a poitner to the map?
 
 private:
     Data taskData;
