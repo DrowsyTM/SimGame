@@ -7,36 +7,30 @@
 #include <atomic> //Merge operations and make it "atomic"(indivisible), no intermediate steps
 #include <random> //Random generator
 #include <functional> //Used for bind function
-#include <memory> //unique_ptr, etc - safe pointers
 #include <format>
-#include <vector>
 
+#include "WorldMap.h"
 
 using namespace std;
 using namespace std::chrono_literals;
 using namespace std::chrono;
-
-enum terrain {
-    PLAINS, FOREST, FCENTER
-};
 
 const int LMAP = 32; // Size of initial map
 //Temporarily global, will change to reference when I get to it
 terrain worldMap[LMAP][LMAP]; //2D enum array of size LMAP - should be much larger than LMAP
 // Maybe create custom class for it to create custom behavior
 // Also iteration would be nice and simplifies code
-default_random_engine ranGen(system_clock::now().time_since_epoch().count());
+default_random_engine randomGenerator(system_clock::now().time_since_epoch().count());
 
 struct ForestNode {
     int x, y;
     bool map[15][15];
 };
-vector<ForestNode> forestList;
+ForestNode forestList[4000];
+int forestAmount = 0;
 
 int GameTick();
 
-void LocalMapGen(); //Generates local map
-void LocalTerraGen();  // Generates terrain
 void LocalFeatureGen(); // Generates features (forest)
 void GenerateForest(const int x, const int y);
 
@@ -60,38 +54,21 @@ void ProfileFunctions() {
 
     logFile << "[ " << input << " ]" << "\n" << ctime(&timeNow) << "\n";
 
-    // Profile LocalMapGen
-    auto start = high_resolution_clock::now();
-    for (int i = 0; i < iterations; ++i) {
-        LocalMapGen();
-    }
-    auto stop = high_resolution_clock::now();
-    time = static_cast<double>(duration_cast<microseconds>(stop - start).count()) / 1000;
-    logFile << "Avg LocalMapGen Time: \t\t" << time / iterations << " ms\n";
-
-    // Profile LocalTerraGen
-    start = high_resolution_clock::now();
-    for (int i = 0; i < iterations; ++i) {
-        LocalTerraGen();
-    }
-    stop = high_resolution_clock::now();
-    time = static_cast<double>(duration_cast<microseconds>(stop - start).count()) / 1000;
-    logFile << "Avg LocalTerraGen Time: \t" << time / iterations << " ms\n";
-
+    forestAmount = 0;
     // Profile LocalFeatureGen
-    start = high_resolution_clock::now();
+    auto start = high_resolution_clock::now();
     for (int i = 0; i < iterations; ++i) {
         LocalFeatureGen();
     }
-    stop = high_resolution_clock::now();
+    auto stop = high_resolution_clock::now();
     time = static_cast<double>(duration_cast<microseconds>(stop - start).count()) / 1000;
     logFile << "Avg LocalFeatureGen Time: \t" << time / iterations << " ms\n";
 
-    forestList.clear();
+    forestAmount = 0;
     //Profile GenerateForest
     uniform_int_distribution<int> dist32(0, 31);
     start = high_resolution_clock::now();
-    auto d32 = bind(dist32, ranGen);
+    auto d32 = bind(dist32, randomGenerator);
     for (int i = 0; i < iterations; ++i) {
         GenerateForest(d32(), d32());
     }
@@ -100,34 +77,53 @@ void ProfileFunctions() {
     logFile << "Avg GenerateForest Time: \t" << time / iterations << " ms\n";
 
     // Profile MergeFeatures
-    cout << "Nodes: " << forestList.size() << "\n";
+    cout << "Nodes: " << forestAmount << "\n";
     start = high_resolution_clock::now();
     MergeFeatures();
     stop = high_resolution_clock::now();
     time = static_cast<double>(duration_cast<microseconds>(stop - start).count()) / 1000;
     logFile << "Avg MergeFeature Time: \t\t" << time / iterations << " ms\n";
 
+    //Profile Map Constructor + Destructor
+    start = high_resolution_clock::now();
+    for (int i = 0; i < iterations; i++) {
+        WorldMap test;
+    }
+    stop = high_resolution_clock::now();
+    time = static_cast<double>(duration_cast<microseconds>(stop - start).count()) / 1000;
+    logFile << "Avg WorldMap Build Time: \t" << time / iterations << " ms\n";
+
+    //Profile Map Draw
+    start = high_resolution_clock::now();
+    for (int i = 0; i < iterations; i++) {
+        static WorldMap test;
+        test.draw();
+    }
+    stop = high_resolution_clock::now();
+    time = static_cast<double>(duration_cast<microseconds>(stop - start).count()) / 1000;
+    logFile << "Avg WorldMap Draw Time: \t" << time / iterations << " ms\n";
 
     logFile << "\n";
     logFile.close();
 }
 
 int main() {
-    char input;
+//    void (*limitedMapGenerator)(int, int) = MapGenerator; //function pointer to overload
+//    jthread mapThread(limitedMapGenerator, 32, 500); // Start generating local map
+//    jthread mapThread([]() { MapGenerator(32, 500); }); //Lambda func
 
-    jthread mapThread(LocalMapGen); // Start generating local map
+//Hmm just implement TPS and use that to measure changes?
 
-//    cout << "Profile? (y/n):\n> ";
-//    cin >> input;
+//    WorldMap map;
+//    map.draw();
+//    map.set(FOREST, map.x() - 1, map.y());
+//    map.draw();
+
     if (true) {
         jthread profileThread(ProfileFunctions);
     }
 
-    cout << "Generating Local Map...\n";
-
-    mapThread.join(); // Wait for map to finish - wil remove this and the print and go into menu
-
-//    Draw();
+    // menu();
 
     cin.ignore(); // Wait for user input before ending
     return 0;
@@ -148,15 +144,8 @@ int GameTick() {
 // This would also allow layers. I can have a ground layer, then layers for other stuff.
 // How to display tho?? Feels like 3D is just has a lot more potential, or at least 3D on 2D plane?
 
-
 // Pre-generates local play area (reduce loading time & load rest of map later)
 // Need to start near middle of map or something. Or random spot
-void LocalMapGen() {
-    //int result = distribution(ranGen);
-    LocalTerraGen();
-    LocalFeatureGen();
-    MergeFeatures();
-}
 
 //Figure out how to make all this work for GlobalMap. Maybe a "chunk" system? Rolls per chunk for feature?
 //Rolls per chunk means we can just roll for the chunk then randomly place it
@@ -173,25 +162,11 @@ void LocalMapGen() {
 
 //Ahh, world gen should probably run on multiple threads to accelerate it
 
-void LocalTerraGen() {
-    // Iterate through Local Map Size
-    int temp;
-
-    for (int y = 0; y < LMAP; y++) {
-        for (int x = 0; x < LMAP; x++) {
-            if (true) {
-                worldMap[y][x] = PLAINS; // Only Plains impelmeneted so far
-            }
-        }
-    }
-
-}
-
 void LocalFeatureGen() {
     //For features, rather than iterate, we can just aim for a random spot since we don't fill everything
 
     static uniform_int_distribution<int> dist32(0, LMAP - 1);
-    static auto d32 = bind(dist32, ranGen);
+    static auto d32 = bind(dist32, randomGenerator);
 
 
     //Forest chance 1/500
@@ -200,6 +175,7 @@ void LocalFeatureGen() {
     //cout << "Num Forest Rolls: " << rolls << "\n";
 
     //Iterate through whole thing for now, annoying, implement some dice globally?
+
     for (; rolls > 0; rolls--) {
         GenerateForest(d32(), d32());
     }
@@ -207,7 +183,7 @@ void LocalFeatureGen() {
 
 void GenerateForest(const int x, const int y) {
     static uniform_int_distribution<int> dist02(-1, 1);
-    static auto d02 = bind(dist02, ranGen);
+    static auto d02 = bind(dist02, randomGenerator);
 
     ForestNode newForest;
     newForest.x = x;
@@ -226,7 +202,8 @@ void GenerateForest(const int x, const int y) {
             }
         }
     }
-    forestList.push_back(newForest);
+    forestList[forestAmount] = newForest;
+    forestAmount++;
 
     // Also forestNode?
     // Node gets its own map. Function that takes this map and puts it onto world?
@@ -236,8 +213,10 @@ void GenerateForest(const int x, const int y) {
 void MergeFeatures() {
     //Just write local map -> world map translation function?
     //Maybe make it part of Forest function
-    for (ForestNode node: forestList) {
+    for (int i = 0; i < forestAmount; i++) {
+        ForestNode node = forestList[i];
         for (int y = 0; y < 15; y++) {
+
             bool validY = y + node.y - 7 >= 0 && y + node.y - 7 < LMAP;
             for (int x = 0; x < 15; x++) {
                 bool validX = node.map[y][x] == true && x + node.x - 7 >= 0 && x + node.x - 7 < LMAP;
@@ -249,35 +228,13 @@ void MergeFeatures() {
     }
 }
 
-void Draw() {
-    // Printing map
-    for (int y = 0; y < LMAP; y++) {
-        for (int x = 0; x < LMAP; x++) {
-            //Make this pairs with keys
-            switch (worldMap[y][x]) {
-                case PLAINS:
-                    cout << "_ ";
-                    break;
-                case FOREST:
-                    cout << "F ";
-                    break;
-                case FCENTER:
-                    cout << "C ";
-                    break;
-                default:
-                    cout << "? ";
-                    break;
-            }
-        }
-        cout << "\n";
-    }
-}
-
 
 
 /** TODO
+ Maybe make abstract class for all features?
  Measure time execution of GenerateForest
  Fix GenerateForest somehow bloating LocalMapGen (figure out threading for world gen as well)
+ Use heap for generate forest?
  Fill in GenerateForest, then maybe switch to noisemap or something
  ForestNodes + resource tracking, stats
  Ooh maybe spawn ForestNode, it generates itself, merges if need be, etc?

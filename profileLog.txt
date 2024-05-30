@@ -34,7 +34,6 @@ Avg LocalTerraGen Time: 	0.000755 ms
 Avg LocalFeatureGen Time: 	0.012077 ms
 Avg MergeFeature Time:  	0.004171 ms
 
-
 [ Added Profiling to GenerateForest ]
 Wed May 29 14:03:06 2024
 
@@ -44,5 +43,21 @@ Avg LocalFeatureGen Time: 	0.01144 ms
 Avg GenerateForest Time: 	0.004048 ms
 Avg MergeFeature Time: 		0.000632 ms
 
+[ Change forestList to array ]
+Wed May 29 15:26:41 2024
 
+Avg LocalMapGen Time: 		0.896247 ms
+Avg LocalTerraGen Time: 	0.000713 ms
+Avg LocalFeatureGen Time: 	0.010196 ms
+Avg GenerateForest Time: 	0.003505 ms
+Avg MergeFeature Time: 		0.000601 ms
+
+[ Testing new WorldMap class ]
+Wed May 29 18:08:43 2024
+
+Avg LocalFeatureGen Time: 	0.011496 ms
+Avg GenerateForest Time: 	0.003631 ms
+Avg MergeFeature Time: 		0.000637 ms
+Avg WorldMap Build Time:    0.292939 ms
+Avg WorldMap Draw Time: 	81.2757 ms
 
