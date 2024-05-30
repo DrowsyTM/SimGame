@@ -116,12 +116,10 @@ int main() {
 
 //Hmm just implement TPS and use that to measure changes?
 
-//    WorldMap map;
-//    map.draw();
-//    map.set(FOREST, map.x() - 1, map.y());
-//    map.draw();
+    WorldMap test;
+    cout << test.numChunks();
 
-    if (true) {
+    if (false) {
         jthread profileThread(ProfileFunctions);
     }
 
@@ -233,6 +231,7 @@ void MergeFeatures() {
 
 
 /** TODO
+ Allow partial chunks or force expand map to minimum chunk limit(so that map dimensions are not multiple of chunk_size)
  Save each seperate line of description, then paste it between map draws?
  Maybe make abstract class for all features?
  Measure time execution of GenerateForest
