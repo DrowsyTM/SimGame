@@ -1,17 +1,42 @@
 #include "WorldMap.h"
 
 //Public
-WorldMap::WorldMap() : WorldMap(750) {} //multiple of chunkSize
+WorldMap::WorldMap() : WorldMap(750) {} //multiple of chunk_size <- change how this works
 
 WorldMap::WorldMap(int size) : map{}, maxSize{size}, lookX{0}, lookY{0}, screenSize{35}, initialized{false}, chunk_size{15} {
 //  std::jthread genThread(&WorldMap::generateMap, this);
 //    std::jthread genThread([this]() { this->generateTerrain(); }); //Call generateTerrain in thread
+    num_chunks = size*size/15;
     spawnRandomzier(lookX, lookY);
 }
 
 //Based on how many threads, we split up the entire map. Then we use start and end row for batch generation.
 
 WorldMap::~WorldMap() {}
+
+// Non-threaded terrain generation
+void WorldMap::generateTerrain() {
+    std::vector<terrain> terraVector(maxSize, PLAINS);
+    for (int i = 0; i < maxSize; i++) {
+        map.push_back(terraVector);
+    } // Fill with plains
+}
+
+void WorldMap::threadGenerateTerrain(int chunk) {
+    int chunksDimension = maxSize / chunk_size;
+
+    // Chunk 0-49 = 0-49 * 15
+    int xOffset = (chunk % chunksDimension) * chunk_size;
+    // Chunk 0-49 = 0, 50-99 = 1, etc * 15
+    int yOffset = (chunk / 50) * chunk_size;
+
+    //maybe make the conditions use offset. Might be faster
+    for (int y = 0; y < chunk_size; y++) {
+        for (int x = 0; x < chunk_size; x++) {
+            map[y + yOffset][x+xOffset] = PLAINS; //Uses chunk offset
+        }
+    }
+}
 
 void WorldMap::draw() const{
 
@@ -77,18 +102,11 @@ int WorldMap::chunkSize() const {
     return chunk_size;
 }
 
+int WorldMap::numChunks() const {
+    return num_chunks;
+}
+
 //Private
-void WorldMap::generateTerrain() {
-    std::vector<terrain> terraVector(maxSize, PLAINS);
-    for (int i = 0; i < maxSize; i++) {
-        map.push_back(terraVector);
-    } // Fill with plains
-}
-
-void WorldMap::threadGenerateTerrain() {
-
-}
-
 void WorldMap::spawnRandomzier(int &x, int &y) {
     // Randomness setup
     int center = maxSize / 2;
@@ -102,6 +120,8 @@ void WorldMap::spawnRandomzier(int &x, int &y) {
     x = spawnDistribution(randomGenerator);
     y = spawnDistribution(randomGenerator);
 }
+
+
 
 
 

@@ -41,6 +41,13 @@ public:
 
     int chunkSize() const;
 
+    int numChunks() const;
+
+    void threadGenerateTerrain(int chunk); //or just add overload to generateTerrain that allows specification of where to gen
+    //hmm should WorldMap track chunks for them? Or is this tracked in TaskHandler?
+
+    void generateTerrain();
+
 private:
     std::vector<std::vector<terrain>> map;
     int maxSize;
@@ -48,10 +55,8 @@ private:
     int screenSize;
     bool initialized;
     int chunk_size;
+    int num_chunks;
 
-    void generateTerrain();
-    void threadGenerateTerrain(); //or just add overload to generateTerrain that allows specification of where to gen
-    //hmm should WorldMap track chunks for them? Or is this tracked in TaskHandler?
     void updateLayer();
 
     void spawnRandomzier(int &x, int &y);
