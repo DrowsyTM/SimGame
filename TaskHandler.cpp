@@ -1,7 +1,7 @@
 #include "TaskHandler.h"
 
 //Delegates to full constructor
-TaskHandler::TaskHandler() : TaskHandler(10, 10, 10, false) {}
+TaskHandler::TaskHandler() : TaskHandler(5, 5, 10, false) {}
 
 //Delegates to full constructor
 TaskHandler::TaskHandler(int workerCount, int loaderCount, int bucketSize)
@@ -12,10 +12,47 @@ TaskHandler::TaskHandler(int workerCount, int loaderCount, int bucketSize, bool 
         : num_workers{workerCount}, num_loaders{loaderCount}, bucket_size(bucketSize), logger_flag{doLogging},
           stop_flag{false} {
 
+    //Loads workers and work_arrays
+    loadWorkers();
+}
 
-    work_arrays.resize(workerCount);
-    for (int i = 0; i < workerCount; i++) {
-        work_arrays[i].resize(10); //
+
+void TaskHandler::LoadingBay(WorldMap &map) {
+    loadLoaderArrays();
+    for (int i = 0; i < num_loaders; i++) {
+        loaders.emplace_back([this, &map, &i]() { loadMapTasks(map, i); });
+    }
+}
+
+//---------------------PRIVATE----------------------------
+
+void TaskHandler::loadMapTasks(WorldMap &map, int ID) {
+    // chunkCount is how many chunks will be loaded by this laoder
+    int chunkCount = map.numChunks() / num_loaders;
+    int start = chunkCount * ID;
+
+    //ID corresponds to bucket
+
+    //For amount = 250, ID is 0-9
+    //0-249, 250-499, 500-749 ... 2250-2499
+
+    int row = 0;
+    for (int chunk = start; chunk < start + chunkCount; chunk++) {
+        if (row != bucket_size) { //Not at end of bucket
+            load_arrays[ID][row] = std::make_unique<TaskTerrainGen>(row, &map);
+            load_flags[ID][row] = 1;
+        } else { //End of bucket
+            //replace task array if empty
+        }
+
+
+    }
+}
+
+void TaskHandler::loadWorkers() {
+    work_arrays.resize(num_workers);
+    for (int i = 0; i < num_workers; i++) {
+        work_arrays[i].resize(bucket_size); //
     }
 
     for (int i = 0; i < num_workers; i++) {
@@ -23,18 +60,16 @@ TaskHandler::TaskHandler(int workerCount, int loaderCount, int bucketSize, bool 
     }
 }
 
-
-void TaskHandler::LoadingBay(WorldMap &map) {
-    for (int i = 0; i < num_workers; i++) {
-        loaders.emplace_back([this, &map, &i]() { loadMapTasks(map, i); });
+void TaskHandler::loadLoaderArrays() {
+    load_arrays.resize(num_loaders);
+    for (int i = 0; i < num_loaders; i++) {
+        load_arrays[i].resize(bucket_size); //
     }
-}
 
-void TaskHandler::loadMapTasks(WorldMap &map, int ID) {
-    int amount = map.numChunks() / num_loaders;
-    int start = amount * ID;
-
-
+    load_flags.resize(num_loaders);
+    for (int i = 0; i < num_loaders; i++) {
+        load_flags[i].resize(bucket_size, 0); //
+    }
 }
 
 //TaskHandler::~TaskHandler() {

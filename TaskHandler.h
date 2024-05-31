@@ -28,23 +28,24 @@ public:
 //    void waitOnEmpty();
 
 private:
-    std::vector<std::jthread> workers;
-    std::vector<std::jthread> loaders;
-
-
-    //Wait why am I using a unique ptr for Task? Hm prob so that it can be passed to me.
-    // Honestly Task is smaller than a ptr and there are so many more things to be optimized.
-    // But I dunno.
-    std::vector<std::vector<std::unique_ptr<Task>>> work_arrays;
-    std::vector<std::vector<std::unique_ptr<Task>>> load_arrays;
-
     int num_workers;
+    std::vector<std::jthread> workers;
+    std::vector<std::vector<std::unique_ptr<Task>>> work_arrays;
+
     int num_loaders;
+    std::vector<std::jthread> loaders;
+    std::vector<std::vector<std::unique_ptr<Task>>> load_arrays;
+    std::vector<std::vector<bool>> load_flags;
+
     int bucket_size;
     bool stop_flag;
     bool logger_flag;
 
     void loadMapTasks(WorldMap &map, int ID);
+
+    void loadWorkers();
+
+    void loadLoaderArrays();
 
 //    std::queue<std::unique_ptr<Task>> tasks;
 
