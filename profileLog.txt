@@ -78,3 +78,38 @@ Avg GenerateForest Time: 	0.00362 ms
 Avg MergeFeature Time: 		0.000632 ms
 Avg WorldMap Build Time: 	0.459432 ms
 Avg WorldMap Draw Time: 	0.332623 ms
+
+[ TaskHandler and Threaded Generation ]
+Thu May 30 23:12:57 2024
+
+Avg WorldMap Build Time: 	0.625307 ms
+Avg WorldMap Draw Time: 	0.666527 ms
+Avg TaskHandler Build Time: 	0.369508 ms
+Avg ThreadGeneration Time: 	19.9731 ms
+
+[ 1 Thread ]
+Thu May 30 23:21:25 2024
+
+Avg WorldMap Build Time: 	0.683537 ms
+Avg WorldMap Draw Time: 	0.70024 ms
+Avg tHandler Build Time: 	0.070715 ms
+Avg ThreadGeneration Time: 	0.799719 ms
+
+[ 1 Thread(no print) ]
+Thu May 30 23:22:21 2024
+
+Avg WorldMap Build Time: 	0.617489 ms
+Avg WorldMap Draw Time: 	0.706305 ms
+Avg tHandler Build Time: 	0.070222 ms
+Avg ThreadGeneration Time: 	0.538749 ms
+
+[ 10 Thread ]
+Thu May 30 23:47:11 2024
+
+Avg WorldMap Build Time: 	0.697985 ms
+Avg WorldMap Draw Time: 	0.813677 ms
+Avg tHandler Build Time: 	0.381257 ms
+Avg ThreadGeneration Time: 	17.721 ms
+
+
+
