@@ -27,7 +27,7 @@ int forestAmount = 0;
 
 int GameTick();
 
-/**
+
 void ProfileFunctions() {
 
     const int iterations = 1000;
@@ -44,42 +44,12 @@ void ProfileFunctions() {
 
     logFile << "[ " << input << " ]" << "\n" << ctime(&timeNow) << "\n";
 
-    forestAmount = 0;
-    // Profile LocalFeatureGen
-    auto start = high_resolution_clock::now();
-    for (int i = 0; i < iterations; ++i) {
-        LocalFeatureGen();
-    }
-    auto stop = high_resolution_clock::now();
-    time = static_cast<double>(duration_cast<microseconds>(stop - start).count()) / 1000;
-    logFile << "Avg LocalFeatureGen Time: \t" << time / iterations << " ms\n";
-
-    forestAmount = 0;
-    //Profile GenerateForest
-    uniform_int_distribution<int> dist32(0, 31);
-    start = high_resolution_clock::now();
-    auto d32 = bind(dist32, randomGenerator);
-    for (int i = 0; i < iterations; ++i) {
-        GenerateForest(d32(), d32());
-    }
-    stop = high_resolution_clock::now();
-    time = static_cast<double>(duration_cast<microseconds>(stop - start).count()) / 1000;
-    logFile << "Avg GenerateForest Time: \t" << time / iterations << " ms\n";
-
-    // Profile MergeFeatures
-    cout << "Nodes: " << forestAmount << "\n";
-    start = high_resolution_clock::now();
-    MergeFeatures();
-    stop = high_resolution_clock::now();
-    time = static_cast<double>(duration_cast<microseconds>(stop - start).count()) / 1000;
-    logFile << "Avg MergeFeature Time: \t\t" << time / iterations << " ms\n";
-
     //Profile Map Constructor + Destructor
-    start = high_resolution_clock::now();
+    auto start = high_resolution_clock::now();
     for (int i = 0; i < iterations; i++) {
         WorldMap test;
     }
-    stop = high_resolution_clock::now();
+    auto stop = high_resolution_clock::now();
     time = static_cast<double>(duration_cast<microseconds>(stop - start).count()) / 1000;
     logFile << "Avg WorldMap Build Time: \t" << time / iterations << " ms\n";
 
@@ -93,21 +63,47 @@ void ProfileFunctions() {
     time = static_cast<double>(duration_cast<microseconds>(stop - start).count()) / 1000;
     logFile << "Avg WorldMap Draw Time: \t" << time / iterations << " ms\n";
 
+    //Profile TaskHandler Builder
+    start = high_resolution_clock::now();
+    for (int i = 0; i < iterations; i++) {
+        TaskHandler test;
+    }
+    stop = high_resolution_clock::now();
+    time = static_cast<double>(duration_cast<microseconds>(stop - start).count()) / 1000;
+    logFile << "Avg tHandler Build Time: \t" << time / iterations << " ms\n";
+
+    //Profile Threaded Map Generation
+    start = high_resolution_clock::now();
+    for (int i = 0; i < iterations; i++) {
+        static WorldMap test;
+        static TaskHandler tester;
+        tester.taskMapGeneration(test);
+        cout << i;
+    }
+    stop = high_resolution_clock::now();
+    time = static_cast<double>(duration_cast<microseconds>(stop - start).count()) / 1000;
+    logFile << "Avg ThreadGeneration Time: \t" << time / iterations << " ms\n";
+
     logFile << "\n";
     logFile.close();
 }
-**/
+
 
 int main() {
     //    jthread mapThread([]() { MapGenerator(32, 500); }); //Lambda func
     //Hmm just implement TPS and use that to measure changes?
 
-    WorldMap map;
-    TaskHandler tasker;
-    tasker.taskMapGeneration(map);
-    map.draw();
+    ProfileFunctions();
 
-    cin.ignore(); // Wait for user input before ending
+//    for (int i = 0; i < 1000; i++) {
+//        static WorldMap map;
+//        static TaskHandler tasker;
+//        cout << i<<" ";
+//        tasker.taskMapGeneration(map);
+//    }
+
+
+//    cin.ignore(); // Wait for user input before ending
     return 0;
 }
 
@@ -178,6 +174,14 @@ void GenerateForest(const int x, const int y) {
 
 
 /** TODO
+ JUST do godamnn buckets. Currently, each task is so fast that the delay and overhead from multithreading just obliterates performance
+ No need to even work-steal at the current stage. One thread is constantly caught up on the work.
+ Ooh use multiple threads to distribute at once? Maybe even one loader thread per buckets(system should balance loads)
+ Wonder if I can deposit multiple tasks at once into queue.
+ 10 Loaders, 10 Workers. Can probably integrate this into the chunk distribution as well.
+ Some sort of "Loading Bay" method?
+ Can be used for MapGeneration, but its main use is later for Timeline updates. Just if statements prob work.
+
  Allow partial chunks or force expand map to minimum chunk limit(so that map dimensions are not multiple of chunk_size)
  Save each seperate line of description, then paste it between map draws?
  Maybe make abstract class for all features?
