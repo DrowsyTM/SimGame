@@ -1,0 +1,6 @@
+
+
+Fri May 31 15:11:02 2024
+Workers: 5 | Loaders: 5 | Buckets: 10
+Loaded workers, work arrays, and work_flags
+No loaders present at destruction
