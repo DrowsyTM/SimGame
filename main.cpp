@@ -251,4 +251,6 @@ void MergeFeatures() {
  MORE FUNCTIONS, LESS NESTING, SIMPLE FUNCTIONS
  Figure out formatting library, mutex, atomic
  Make Forest "Node" that keeps track of stats and updates? Also has map of forest. Simple 0 / 1 binary map
+
+ IMPELMENT TRY/CATCH IN TASKHANDLER
 **/
