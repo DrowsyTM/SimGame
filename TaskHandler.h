@@ -17,19 +17,19 @@ public:
 
     void taskMapGeneration(WorldMap& map);
     int numTasks();
+    void waitOnEmpty();
 
 private:
     std::vector<std::jthread> workers;
     std::queue<std::unique_ptr<Task>> tasks;
     int numThreads;
     std::mutex mtx;
+    std::mutex worker_mtx;
     std::stop_source stopSource;
     std::stop_token stopToken; //Whether threads should stop permanently
     std::condition_variable cv; //Signals whether tasks are available
 
     void workerThread();
-
-    std::unique_ptr<Task> pop();
 
     void push(std::unique_ptr<Task> task);
 
