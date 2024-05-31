@@ -3,10 +3,12 @@
 //Public
 WorldMap::WorldMap() : WorldMap(750) {} //multiple of chunk_size <- change how this works
 
-WorldMap::WorldMap(int size) : map{}, maxSize{size}, lookX{0}, lookY{0}, screenSize{35}, initialized{false}, chunk_size{15} {
+WorldMap::WorldMap(int size)
+        : map{}, maxSize{size}, lookX{0}, lookY{0}, screenSize{35}, initialized{false}, chunk_size{15} {
 //  std::jthread genThread(&WorldMap::generateMap, this);
 //    std::jthread genThread([this]() { this->generateTerrain(); }); //Call generateTerrain in thread
-    num_chunks = size*size/15;
+    map.resize(maxSize, std::vector<terrain>(maxSize, FOREST));
+    num_chunks = size * size / 15 / 15;
     spawnRandomzier(lookX, lookY);
 }
 
@@ -33,12 +35,12 @@ void WorldMap::threadGenerateTerrain(int chunk) {
     //maybe make the conditions use offset. Might be faster
     for (int y = 0; y < chunk_size; y++) {
         for (int x = 0; x < chunk_size; x++) {
-            map[y + yOffset][x+xOffset] = PLAINS; //Uses chunk offset
+            map[y + yOffset][x + xOffset] = PLAINS; //Uses chunk offset
         }
     }
 }
 
-void WorldMap::draw() const{
+void WorldMap::draw() const {
 
     std::stringstream ss;
     int xOffset = lookX - (screenSize - 1) / 2;
@@ -77,7 +79,7 @@ void WorldMap::set(terrain type, int x, int y) {
     map[y][x] = type;
 }
 
-int WorldMap::size() const{
+int WorldMap::size() const {
     return maxSize;
 }
 
@@ -86,7 +88,7 @@ void WorldMap::clear() {
 
 }
 
-bool WorldMap::isEmpty() const{
+bool WorldMap::isEmpty() const {
     return initialized;
 }
 
