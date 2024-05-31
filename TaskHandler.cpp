@@ -10,10 +10,39 @@ TaskHandler::TaskHandler(int workerCount, int loaderCount, int bucketSize)
 //Full Constructor
 TaskHandler::TaskHandler(int workerCount, int loaderCount, int bucketSize, bool doLogging)
         : num_workers{workerCount}, num_loaders{loaderCount}, bucket_size(bucketSize), logger_flag{doLogging},
-          stop_flag{false} {
+          stop_flag{false}, loader_cvs{}, loaders{}, workers{} {
+
+    loadLogger();
 
     //Loads workers and work_arrays
     loadWorkers();
+}
+
+TaskHandler::~TaskHandler() {
+    for (int i = 0; i < num_workers; i++) {
+        if (workers[i].joinable()) {
+            workers[i].join();
+        } else if (logger_flag) {
+            logger << "Worker " << i << "didn't join\n";
+        }
+    }
+    if (!loaders.empty()) {
+        for (int i = 0; i < num_loaders; i++) {
+
+            if (loaders[i].joinable()) {
+                loaders[i].join();
+            } else if (logger_flag) {
+                logger << "Loader " << i << "didn't join\n";
+            }
+
+        }
+    } else if (logger_flag) {
+        logger << "No loaders present at destruction\n";
+    }
+
+    if (logger_flag) {
+        logger.close();
+    }
 }
 
 
@@ -40,9 +69,16 @@ void TaskHandler::loadMapTasks(WorldMap &map, int ID) {
     for (int chunk = start; chunk < start + chunkCount; chunk++) {
         if (row != bucket_size) { //Not at end of bucket
             load_arrays[ID][row] = std::make_unique<TaskTerrainGen>(row, &map);
-            load_flags[ID][row] = 1;
+//            load_flags[ID][row] = 1;
+            //unnecessary for 1:1
+            row++;
+
         } else { //End of bucket
-            //replace task array if empty
+            row = 0;
+            while (work_flags[ID]) {
+
+            }
+            // ooh we send a notification to unlock a specific thread which locks itself when its emptY?
         }
 
 
@@ -55,9 +91,14 @@ void TaskHandler::loadWorkers() {
         work_arrays[i].resize(bucket_size); //
     }
 
+    work_flags.resize(num_workers, 0);
+
     for (int i = 0; i < num_workers; i++) {
         workers.emplace_back([this]() { /**work function with ID**/ });
     }
+
+    logger << "Loaded workers, work arrays, and work_flags\n";
+
 }
 
 void TaskHandler::loadLoaderArrays() {
@@ -66,25 +107,31 @@ void TaskHandler::loadLoaderArrays() {
         load_arrays[i].resize(bucket_size); //
     }
 
-    load_flags.resize(num_loaders);
-    for (int i = 0; i < num_loaders; i++) {
-        load_flags[i].resize(bucket_size, 0); //
+    // NOT necessary for 1:1, will implement later tho
+//    load_flags.resize(num_loaders);
+//    for (int i = 0; i < num_loaders; i++) {
+//        load_flags[i].resize(bucket_size, 0); //
+//    }
+}
+
+void TaskHandler::loadLogger() {
+    if (logger_flag) {
+        std::string logName = "HandlerLog.txt";
+        logger.open(logName, std::fstream::app);
+        if (!logger.is_open()) {
+            logger_flag = false;
+            std::cout << "Unable to open " << logName << std::endl;
+        } else {
+            std::chrono::time_point currTime = std::chrono::system_clock::now();
+            auto timeNow = std::chrono::system_clock::to_time_t(currTime);
+            logger << "\n\n" << ctime(&timeNow);
+            logger << "Workers: " << num_workers << " | Loaders: " << num_loaders << " | Buckets: " << bucket_size
+                   << "\n";
+        }
     }
 }
 
-//TaskHandler::~TaskHandler() {
-//
-//    stopSource.request_stop();
-//    cv.notify_all();
-//
-//    for (auto &worker: workers) {
-//        if (worker.joinable()) {
-//            worker.join();
-//        } else {
-//            std::cout << "Worker didn't join\n";
-//        }
-//    }
-//}
+
 //
 //int TaskHandler::numTasks() {
 //    return tasks.size();
