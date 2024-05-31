@@ -14,15 +14,17 @@ TaskHandler::~TaskHandler() {
         stopSource.request_stop();
         cv.notify_all();
     }
-    while (!workers.empty()) {
-        for (auto &worker: workers) {
-            if (worker.joinable()) {
-                worker.join();
-            }
+    for (auto &worker: workers) {
+        if (worker.joinable()) {
+            worker.join();
+        } else {
+            std::cout << "Worker didn't join\n";
         }
-        std::cout << "Missed " << workers.size() << " thread(s).";
     }
+}
 
+int TaskHandler::numTasks() {
+    return tasks.size();
 }
 
 //---------------Private-------------------
@@ -67,14 +69,16 @@ void TaskHandler::push(std::unique_ptr<Task> task) {
 
 
 //---------------Work with External Objects-------------------
-void TaskHandler::taskMapGeneration(WorldMap map) {
+void TaskHandler::taskMapGeneration(WorldMap &map) {
     std::lock_guard<std::mutex> lock(mtx);
     int num_chunks = map.numChunks();
     //Prevents multiple threads from doing this, but I'm not sure it matters
     for (int i = 0; i < num_chunks; i++) {
         push(std::make_unique<TaskTerrainGen>(i, &map));
     }
+    std::cout << "Generated " << num_chunks << " chunks.\n";
 }
+
 
 
 

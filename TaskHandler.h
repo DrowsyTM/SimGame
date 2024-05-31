@@ -15,12 +15,17 @@ public:
 
     ~TaskHandler();
 
-    void taskMapGeneration(WorldMap map);
+    void taskMapGeneration(WorldMap& map);
+    int numTasks();
 
 private:
     std::vector<std::jthread> workers;
     std::queue<std::unique_ptr<Task>> tasks;
     int numThreads;
+    std::mutex mtx;
+    std::stop_source stopSource;
+    std::stop_token stopToken; //Whether threads should stop permanently
+    std::condition_variable cv; //Signals whether tasks are available
 
     void workerThread();
 
@@ -28,11 +33,6 @@ private:
 
     void push(std::unique_ptr<Task> task);
 
-    std::mutex mtx;
-    std::stop_source stopSource;
-    std::stop_token stopToken; //Whether threads should stop permanently
-
-    std::condition_variable cv; //Signals whether tasks are available
 };
 
 
