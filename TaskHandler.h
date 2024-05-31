@@ -12,20 +12,27 @@
 class TaskHandler {
 public:
     TaskHandler();
+
     ~TaskHandler();
 
     void taskMapGeneration(WorldMap map);
+
 private:
     std::vector<std::jthread> workers;
-    std::vector<std::unique_ptr<Task>> tasks; //use something else, Vector slow due to thread safety
-    std::vector<std::mutex> locks;
+    std::queue<std::unique_ptr<Task>> tasks;
     int numThreads;
 
-
     void workerThread();
-    std::optional<std::unique_ptr<Task>> getNext();
-    bool tryLock(int index);
-    // Join all threads function?
+
+    std::unique_ptr<Task> pop();
+
+    void push(std::unique_ptr<Task> task);
+
+    std::mutex mtx;
+    std::stop_source stopSource;
+    std::stop_token stopToken; //Whether threads should stop permanently
+
+    std::condition_variable cv; //Signals whether tasks are available
 };
 
 

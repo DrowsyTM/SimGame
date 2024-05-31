@@ -1,48 +1,84 @@
 #include "TaskHandler.h"
 
-TaskHandler::TaskHandler() : tasks{}, locks{}, numThreads{10} {
+TaskHandler::TaskHandler()
+        : tasks{}, numThreads{10}, cv{}, mtx{}, stopSource{},
+          stopToken{stopSource.get_token()} {
     for (int i = 0; i < numThreads; i++) {
-        workers.push_back(std::jthread([this]() { this->workerThread(); }));
+        workers.emplace_back([this]() { this->workerThread(); });
     }
 }
 
-TaskHandler::~TaskHandler() {}
+TaskHandler::~TaskHandler() {
+    {
+        std::lock_guard<std::mutex> lock(mtx);
+        stopSource.request_stop();
+        cv.notify_all();
+    }
+    while (!workers.empty()) {
+        for (auto &worker: workers) {
+            if (worker.joinable()) {
+                worker.join();
+            }
+        }
+        std::cout << "Missed " << workers.size() << " thread(s).";
+    }
+
+}
 
 //---------------Private-------------------
-void TaskHandler::workerThread() {
-    // loops until work exists (conditional variable?)
-    while (true) {
-        break;
-        getNext()->get()->execute();
-        //somehow delete the task from vector?
-        locks[-1].unlock(); //how do I get the index of the task I just did
-    }
-}
 
-std::optional<std::unique_ptr<Task>> TaskHandler::getNext() {
-    for (int i = 0; i < tasks.size(); i++){
-        if (tryLock(i)){
-            return std::move(tasks[i]); //Hopefully this gives ownership of the task to the workerThread
-            //Hmm how do we unlock and how do we clear out this task
+//Waits on queue, executes tasks from queue
+void TaskHandler::workerThread() {
+    while (!stopToken.stop_requested()) {//I think this should be true instead?
+        std::unique_lock<std::mutex> lock(mtx);
+        cv.wait(lock, [this] { return !tasks.empty() || stopToken.stop_requested(); });
+        if (stopToken.stop_requested()) {
+            return;
+        }
+        auto task = pop();
+
+        if (task) {
+            try { //If execution fails for some reason, catches exception and prints it.
+                task->execute();
+            } catch (const std::exception &e) {
+                std::cout << e.what();
+            }
         }
     }
-    return std::nullopt;
 }
 
-bool TaskHandler::tryLock(int index) {
-    if (locks[index].try_lock()) {
-        return true;
+//Safely pops from queue and returns value
+std::unique_ptr<Task> TaskHandler::pop() {
+    std::lock_guard<std::mutex> lock(mtx);
+    if (tasks.empty()) {
+        return nullptr;
     }
-    return false;
+    auto task = std::move(tasks.front()); //Hopefully works
+    tasks.pop();
+    return task; //compiler automatically moves
 }
+
+//Safely pushes onto queue
+void TaskHandler::push(std::unique_ptr<Task> task) {
+    std::lock_guard<std::mutex> lock(mtx);
+    tasks.push(std::move(task));
+    cv.notify_one(); //lets a thread through?
+}
+
 
 //---------------Work with External Objects-------------------
 void TaskHandler::taskMapGeneration(WorldMap map) {
+    std::lock_guard<std::mutex> lock(mtx);
     int num_chunks = map.numChunks();
+    //Prevents multiple threads from doing this, but I'm not sure it matters
     for (int i = 0; i < num_chunks; i++) {
-        tasks.push_back(std::make_unique<TaskTerrainGen>(i, &map));
+        push(std::make_unique<TaskTerrainGen>(i, &map));
     }
 }
 
 
 
+
+
+// Cleaner process should be its own task with .execute() ? Maybe
+// No cleaner, just blacklist index and replace it?
