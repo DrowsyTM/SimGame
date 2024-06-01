@@ -34,8 +34,6 @@ private:
     std::vector<std::vector<std::unique_ptr<Task>>> work_arrays; // Buckets for each worker
     std::vector<std::atomic<bool>> working_flag; //single flag for each bucket
 
-
-
     int num_loaders;
     std::vector<std::jthread> loaders;
     std::vector<std::vector<std::unique_ptr<Task>>> load_arrays;
@@ -44,11 +42,13 @@ private:
     //In fact, multiple loaders can load up muliple different load arrays and then just send
     // it to the first available worker. Implement this later, currently 1:1
 
+    std::mutex logger_mtx;
     int bucket_size;
-    bool stop_flag;
+    std::atomic<bool> stop_flag;
     bool logger_flag;
-
     std::fstream logger;
+
+    void workerThread(int ID);
 
     void loadMapTasks(WorldMap &map, int ID);
 
@@ -58,19 +58,6 @@ private:
 
     void loadLogger();
 
-//    std::queue<std::unique_ptr<Task>> tasks;
-
-//    std::mutex mtx;
-//    std::mutex worker_mtx;
-//    std::stop_source stopSource;
-//    std::stop_token stopToken; //Whether threads should stop permanently
-//    std::condition_variable cv; //Signals whether tasks are available
-//
-//
-//
-//    void workerThread();
-//
-//    void push(std::unique_ptr<Task> task);
 
 };
 
