@@ -29,7 +29,7 @@ TaskHandler::~TaskHandler() {
             workers[ID].join();
         } else if (logger_flag.load(std::memory_order_relaxed)) {
             std::lock_guard lock(logger_mtx);
-            logger << "Worker " << ID << "didn't join\n";
+            logger << "Worker " << ID << "didn't join" << std::endl;
         }
         ID++;
     }
@@ -39,7 +39,7 @@ TaskHandler::~TaskHandler() {
                 loaders[i].join();
             } else if (logger_flag.load(std::memory_order_relaxed)) {
                 std::lock_guard lock(logger_mtx);
-                logger << "Loader " << i << "didn't join\n";
+                logger << "Loader " << i << "didn't join" << std::endl;
             }
 
         }
@@ -48,13 +48,19 @@ TaskHandler::~TaskHandler() {
         logger << "No loaders present at destruction\n";
     }
     if (logger_flag.load(std::memory_order_relaxed)) {
+        logger << "Destructor fully executed" << std::endl;
         logger.close();
     }
+
 }
 
 void TaskHandler::LoadingBay(WorldMap &map) {
     for (int i = 0; i < num_loaders; i++) {
         loaders.emplace_back([this, &map, i]() { loadMapTasks(map, i); });
+    }
+    if (logger_flag.load(std::memory_order_relaxed)) {
+        std::lock_guard lock(logger_mtx);
+        logger << "Loaded loaders"<<std::endl;
     }
 }
 
@@ -74,6 +80,9 @@ void TaskHandler::loadMapTasks(WorldMap &map, int ID) {
     //For amount = 250, ID is 0-9
     //0-249, 250-499, 500-749 ... 2250-2499
     int row = 0;
+
+    //Ok first of all we don't account for the for loop ending before we give the last Tasks
+    // We have some ungenerated chunks, this might be why multithreading seems to break at the very end.
     for (int chunk = start; chunk < end; chunk++) {
         if (row != bucket_size) { //Not at end of bucket
             load_arrays[ID][row] = std::make_unique<TaskTerrainGen>(chunk, &map);
@@ -124,7 +133,7 @@ void TaskHandler::loadLoaderArrays() {
     }
     if (logger_flag) {
         std::lock_guard lock(logger_mtx);
-        logger << "Loaded loaders\n";
+        logger << "Loaded loader arrays"<<std::endl;
     }
 }
 
@@ -171,71 +180,3 @@ void TaskHandler::workerThread(int ID) {
         working_flag[ID].store(false, std::memory_order_relaxed);
     }
 }
-
-
-//
-//int TaskHandler::numTasks() {
-//    return tasks.size();
-//}
-//
-//void TaskHandler::waitOnEmpty() {
-//    while (!tasks.empty()) {
-//    }
-//    return;
-//}
-//
-////---------------Private-------------------
-//
-////Waits on queue, executes tasks from queue
-//void TaskHandler::workerThread() {
-//    while (true) {//I think this should be true instead
-//        std::unique_ptr<Task> task;
-//        {
-//            std::unique_lock<std::mutex> lock(mtx);
-//            cv.wait(lock, [this] { return !tasks.empty() || stopToken.stop_requested(); });
-//            if (stopToken.stop_requested() && tasks.empty()) {
-//                return;
-//            }
-//            if (!tasks.empty()) {
-//                task = std::move(tasks.front());
-//                tasks.pop();
-//            }
-//        }
-//        if (task) {
-//            try { //If execution fails for some reason, catches exception and prints it.
-//                task->execute();
-//            } catch (const std::exception &e) {
-//                std::cout << e.what();
-//            }
-//        }
-//    }
-//}
-//
-//
-////Safely pushes onto queue
-//void TaskHandler::push(std::unique_ptr<Task> task) {
-//    std::lock_guard<std::mutex> lock(mtx);
-//    {
-//        tasks.push(std::move(task));
-//    }
-//    cv.notify_one(); //lets a thread through?
-//}
-//
-//
-////---------------Work with External Objects-------------------
-//void TaskHandler::taskMapGeneration(WorldMap &map) {
-//    int num_chunks = map.numChunks();
-//    //Prevents multiple threads from doing this, but I'm not sure it matters
-//    for (int i = 0; i < num_chunks; i++) {
-//        push(std::make_unique<TaskTerrainGen>(i, &map));
-//    }
-//    std::cout << "Generated " << num_chunks << " chunks.\n";
-//}
-//
-//
-//
-//
-//
-//
-//// Cleaner process should be its own task with .execute() ? Maybe
-//// No cleaner, just blacklist index and replace it?
