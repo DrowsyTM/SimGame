@@ -27,7 +27,7 @@ TaskHandler::~TaskHandler() {
     for (auto &worker: workers) {
         if (workers[ID].joinable()) {
             workers[ID].join();
-        } else if (logger_flag) {
+        } else if (logger_flag.load(std::memory_order_relaxed)) {
             std::lock_guard lock(logger_mtx);
             logger << "Worker " << ID << "didn't join\n";
         }
@@ -37,17 +37,17 @@ TaskHandler::~TaskHandler() {
         for (int i = 0; i < num_loaders; i++) {
             if (loaders[i].joinable()) {
                 loaders[i].join();
-            } else if (logger_flag) {
+            } else if (logger_flag.load(std::memory_order_relaxed)) {
                 std::lock_guard lock(logger_mtx);
                 logger << "Loader " << i << "didn't join\n";
             }
 
         }
-    } else if (logger_flag) {
+    } else if (logger_flag.load(std::memory_order_relaxed)) {
         std::lock_guard lock(logger_mtx);
         logger << "No loaders present at destruction\n";
     }
-    if (logger_flag) {
+    if (logger_flag.load(std::memory_order_relaxed)) {
         logger.close();
     }
 }
@@ -135,7 +135,6 @@ void TaskHandler::loadLogger() {
         logger_flag = false;
         std::cout << "Unable to open " << logName << std::endl;
     } else {
-        std::lock_guard lock(logger_mtx);
         std::chrono::time_point currTime = std::chrono::system_clock::now();
         auto timeNow = std::chrono::system_clock::to_time_t(currTime);
         logger << "\n\n" << ctime(&timeNow);
@@ -146,7 +145,7 @@ void TaskHandler::loadLogger() {
 }
 
 void TaskHandler::workerThread(int ID) {
-    while (!stop_flag) {
+    while (!stop_flag.load(std::memory_order_relaxed)) {
         int iter = 0;
         //While corresponding flag is false (default) & < 0.1 ms of wait
         while (!working_flag[ID].load(std::memory_order_relaxed) && iter < 100000) {
@@ -154,7 +153,7 @@ void TaskHandler::workerThread(int ID) {
             iter++;
         }
         if (iter >= 100000) { //Waiting function to not waste resources.
-            if (logger_flag) {
+            if (logger_flag.load(std::memory_order_relaxed)) {
                 std::lock_guard lock(logger_mtx);
                 logger << "Thread " << ID << " went to long wait\n";
             }

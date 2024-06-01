@@ -23,6 +23,7 @@ public:
     ~TaskHandler();
 
     void LoadingBay(WorldMap &map);
+
 //
 //    void taskMapGeneration(WorldMap& map);
 //    int numTasks();
@@ -45,7 +46,7 @@ private:
     std::mutex logger_mtx;
     int bucket_size;
     std::atomic<bool> stop_flag;
-    bool logger_flag;
+    std::atomic<bool> logger_flag;
     std::fstream logger;
 
     void workerThread(int ID);
