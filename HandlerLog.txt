@@ -1,6 +1,84 @@
 
 
-Fri May 31 15:11:02 2024
-Workers: 5 | Loaders: 5 | Buckets: 10
+Sat Jun 01 01:30:31 2024
+Workers: 1 | Loaders: 1 | Buckets: 10
 Loaded workers, work arrays, and work_flags
-No loaders present at destruction
+Loaded loaders
+Loaded loaders
+Thread 0 went to long wait
+
+
+Sat Jun 01 01:35:16 2024
+Workers: 1 | Loaders: 1 | Buckets: 10
+Loaded workers, work arrays, and work_flags
+Loaded loaders
+Loaded loaders
+Thread 0 went to long wait
+
+
+Sat Jun 01 02:29:55 2024
+Workers: 1 | Loaders: 1 | Buckets: 10
+Loaded workers, work arrays, and work_flags
+Loaded loaders
+Loaded loaders
+Thread 0 went to long wait
+
+
+Sat Jun 01 03:44:21 2024
+Workers: 1 | Loaders: 1 | Buckets: 10
+Loaded workers, work arrays, and work_flags
+Loaded loaders
+Thread 0 went to long wait
+
+
+Sat Jun 01 03:47:53 2024
+Workers: 1 | Loaders: 1 | Buckets: 10
+Loaded workers, work arrays, and work_flags
+Loaded loaders
+Thread 0 went to long wait
+Destructor fully executed
+
+
+Sat Jun 01 03:49:37 2024
+Workers: 1 | Loaders: 1 | Buckets: 10
+Loaded workers, work arrays, and work_flags
+Loaded loader arrays
+Loaded loaders
+Thread 0 went to long wait
+Destructor fully executed
+
+
+Sat Jun 01 03:50:41 2024
+Workers: 1 | Loaders: 1 | Buckets: 10
+Loaded workers, work arrays, and work_flags
+Loaded loader arrays
+Loaded loaders
+Thread 0 went to long wait
+Destructor fully executed
+
+
+Sat Jun 01 03:51:36 2024
+Workers: 1 | Loaders: 1 | Buckets: 10
+Loaded workers, work arrays, and work_flags
+Loaded loader arrays
+Loaded loaders
+Thread 0 went to long wait
+Destructor fully executed
+
+
+Sat Jun 01 03:53:58 2024
+Workers: 1 | Loaders: 1 | Buckets: 10
+Loaded workers, work arrays, and work_flags
+Loaded loader arrays
+Loaded loaders
+Thread 0 went to long wait
+Destructor fully executed
+
+
+Sat Jun 01 04:02:01 2024
+Workers: 1 | Loaders: 1 | Buckets: 10
+Loaded workers, work arrays, and work_flags
+Loaded loader arrays
+Loaded loaders
+Thread 0 went to long wait
+Destructor fully executed
