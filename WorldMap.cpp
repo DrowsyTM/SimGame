@@ -4,10 +4,9 @@
 WorldMap::WorldMap() : WorldMap(750) {} //multiple of chunk_size <- change how this works
 
 WorldMap::WorldMap(int size)
-        : map{}, maxSize{size}, lookX{0}, lookY{0}, screenSize{35}, initialized{false}, chunk_size{15} {
-//  std::jthread genThread(&WorldMap::generateMap, this);
-//    std::jthread genThread([this]() { this->generateTerrain(); }); //Call generateTerrain in thread
-    map.resize(maxSize, std::vector<terrain>(maxSize, FOREST));
+        : map{}, map_size{size}, lookX{0}, lookY{0}, screen_size{35}, initialized{false}, chunk_size{15} {
+
+    map.resize(map_size, std::vector<terrain>(map_size, BLANK));
     num_chunks = size * size / 15 / 15;
     spawnRandomzier(lookX, lookY);
 }
@@ -18,19 +17,17 @@ WorldMap::~WorldMap() {}
 
 // Non-threaded terrain generation
 void WorldMap::generateTerrain() {
-    std::vector<terrain> terraVector(maxSize, PLAINS);
-    for (int i = 0; i < maxSize; i++) {
-        map.push_back(terraVector);
-    } // Fill with plains
+    std::vector<terrain> terraVector(map_size, PLAINS);
+    map.resize(map_size, terraVector);// Fill with plains
 }
 
 void WorldMap::threadGenerateTerrain(int chunk) {
-    int chunksDimension = maxSize / chunk_size;
+    int chunksDimension = map_size / chunk_size;
 
     // Chunk 0-49 = 0-49 * 15
     int xOffset = (chunk % chunksDimension) * chunk_size;
     // Chunk 0-49 = 0, 50-99 = 1, etc * 15
-    int yOffset = (chunk / 50) * chunk_size;
+    int yOffset = (chunk / chunksDimension) * chunk_size;
 
     //maybe make the conditions use offset. Might be faster
     for (int y = 0; y < chunk_size; y++) {
@@ -43,13 +40,13 @@ void WorldMap::threadGenerateTerrain(int chunk) {
 void WorldMap::draw() const {
 
     std::stringstream ss;
-    int xOffset = lookX - (screenSize - 1) / 2;
-    int yOffset = lookY - (screenSize - 1) / 2;
+    int xOffset = lookX - (screen_size - 1) / 2;
+    int yOffset = lookY - (screen_size - 1) / 2;
 
     ss << "[ " << lookX << ", " << lookY << " ]\n";
-    for (int y = 0; y < screenSize; y++) {
-        for (int x = 0; x < screenSize; x++) {
-            if (x == (screenSize - 1) / 2 && y == (screenSize - 1) / 2) {
+    for (int y = 0; y < screen_size; y++) {
+        for (int x = 0; x < screen_size; x++) {
+            if (x == (screen_size - 1) / 2 && y == (screen_size - 1) / 2) {
                 ss << "v ";
             } else {
                 //Make this pairs with keys
@@ -75,14 +72,47 @@ void WorldMap::draw() const {
     std::cout << ss.str() << std::endl;
 }
 
+void WorldMap::printMap() const {
+
+    std::stringstream ss;
+    std::ofstream output_file("map_output.txt", std::fstream::trunc);
+
+    for (int y = 0; y < map_size; y++) {
+        for (int x = 0; x < map_size; x++) {
+
+            //Make this pairs with keys
+            switch (map[y][x]) {
+                case PLAINS:
+                    ss << "_ ";
+                    break;
+                case FOREST:
+                    ss << "F ";
+                    break;
+                case FCENTER:
+                    ss << "C ";
+                    break;
+                default:
+                    ss << "? ";
+                    break;
+            }
+
+        }
+        ss << "\n";
+    }
+    ss << "\n";
+    output_file << ss.str() << std::endl;
+    output_file.close();
+
+    std::cout << "Printed map to txt\n";
+}
+
 void WorldMap::set(terrain type, int x, int y) {
     map[y][x] = type;
 }
 
 int WorldMap::size() const {
-    return maxSize;
+    return map_size;
 }
-
 
 void WorldMap::clear() {
 
@@ -108,11 +138,15 @@ int WorldMap::numChunks() const {
     return num_chunks;
 }
 
+void WorldMap::setInitialized() {
+    initialized = true;
+}
+
 //Private
 void WorldMap::spawnRandomzier(int &x, int &y) {
     // Randomness setup
-    int center = maxSize / 2;
-    int halfMap = 0.25 * maxSize;
+    int center = map_size / 2;
+    int halfMap = 0.25 * map_size;
     int halfToCenter = center - halfMap;
     int halfFromCenter = center + halfMap;
     std::default_random_engine randomGenerator(std::chrono::system_clock::now().time_since_epoch().count());
@@ -122,6 +156,12 @@ void WorldMap::spawnRandomzier(int &x, int &y) {
     x = spawnDistribution(randomGenerator);
     y = spawnDistribution(randomGenerator);
 }
+
+//wtf is this function
+void WorldMap::updateLayer() {}
+
+
+
 
 
 
