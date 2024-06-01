@@ -28,82 +28,71 @@ int forestAmount = 0;
 int GameTick();
 
 
-void ProfileFunctions() {
-
-    const int iterations = 1000;
-    double time = 0; //ms
-
-    string input;
-    cout << "Custom Message:\n> ";
-    cin.sync();
-    getline(cin, input);
-
-    time_point currTime = system_clock::now();
-    auto timeNow = system_clock::to_time_t(currTime); //C++11 tho, where is C++20, formatting?
-    ofstream logFile("profileLog.txt", fstream::app);
-
-    logFile << "[ " << input << " ]" << "\n" << ctime(&timeNow) << "\n";
-
-    //Profile Map Constructor + Destructor
-    auto start = high_resolution_clock::now();
-    for (int i = 0; i < iterations; i++) {
-        WorldMap test;
-    }
-    auto stop = high_resolution_clock::now();
-    time = static_cast<double>(duration_cast<microseconds>(stop - start).count()) / 1000;
-    logFile << "Avg WorldMap Build Time: \t" << time / iterations << " ms\n";
-
-    //Profile Map Draw
-    start = high_resolution_clock::now();
-    for (int i = 0; i < iterations; i++) {
-        static WorldMap test;
-        test.draw();
-    }
-    stop = high_resolution_clock::now();
-    time = static_cast<double>(duration_cast<microseconds>(stop - start).count()) / 1000;
-    logFile << "Avg WorldMap Draw Time: \t" << time / iterations << " ms\n";
-
-    //Profile TaskHandler Builder
-    start = high_resolution_clock::now();
-    for (int i = 0; i < iterations; i++) {
-        TaskHandler test;
-    }
-    stop = high_resolution_clock::now();
-    time = static_cast<double>(duration_cast<microseconds>(stop - start).count()) / 1000;
-    logFile << "Avg tHandler Build Time: \t" << time / iterations << " ms\n";
-
-    //Profile Threaded Map Generation
-    start = high_resolution_clock::now();
-    for (int i = 0; i < iterations; i++) {
-        static WorldMap test;
-        static TaskHandler tester;
-        tester.taskMapGeneration(test);
-        cout << i;
-    }
-    stop = high_resolution_clock::now();
-    time = static_cast<double>(duration_cast<microseconds>(stop - start).count()) / 1000;
-    logFile << "Avg ThreadGeneration Time: \t" << time / iterations << " ms\n";
-
-    logFile << "\n";
-    logFile.close();
-}
+//void ProfileFunctions() {
+//
+//    const int iterations = 1000;
+//    double time = 0; //ms
+//
+//    string input;
+//    cout << "Custom Message:\n> ";
+//    cin.sync();
+//    getline(cin, input);
+//
+//    time_point currTime = system_clock::now();
+//    auto timeNow = system_clock::to_time_t(currTime); //C++11 tho, where is C++20, formatting?
+//    ofstream logFile("profileLog.txt", fstream::app);
+//
+//    logFile << "[ " << input << " ]" << "\n" << ctime(&timeNow) << "\n";
+//
+//    //Profile Map Constructor + Destructor
+//    auto start = high_resolution_clock::now();
+//    for (int i = 0; i < iterations; i++) {
+//        WorldMap test;
+//    }
+//    auto stop = high_resolution_clock::now();
+//    time = static_cast<double>(duration_cast<microseconds>(stop - start).count()) / 1000;
+//    logFile << "Avg WorldMap Build Time: \t" << time / iterations << " ms\n";
+//
+//    //Profile Map Draw
+//    start = high_resolution_clock::now();
+//    for (int i = 0; i < iterations; i++) {
+//        static WorldMap test;
+//        test.draw();
+//    }
+//    stop = high_resolution_clock::now();
+//    time = static_cast<double>(duration_cast<microseconds>(stop - start).count()) / 1000;
+//    logFile << "Avg WorldMap Draw Time: \t" << time / iterations << " ms\n";
+//
+//    //Profile TaskHandler Builder
+//    start = high_resolution_clock::now();
+//    for (int i = 0; i < iterations; i++) {
+//        TaskHandler test;
+//    }
+//    stop = high_resolution_clock::now();
+//    time = static_cast<double>(duration_cast<microseconds>(stop - start).count()) / 1000;
+//    logFile << "Avg tHandler Build Time: \t" << time / iterations << " ms\n";
+//
+//    //Profile Threaded Map Generation
+//    start = high_resolution_clock::now();
+//    for (int i = 0; i < iterations; i++) {
+//        static WorldMap test;
+//        static TaskHandler tester;
+//        tester.taskMapGeneration(test);
+//        cout << i;
+//    }
+//    stop = high_resolution_clock::now();
+//    time = static_cast<double>(duration_cast<microseconds>(stop - start).count()) / 1000;
+//    logFile << "Avg ThreadGeneration Time: \t" << time / iterations << " ms\n";
+//
+//    logFile << "\n";
+//    logFile.close();
+//}
 
 
 int main() {
-    //    jthread mapThread([]() { MapGenerator(32, 500); }); //Lambda func
-    //Hmm just implement TPS and use that to measure changes?
 
-    ProfileFunctions();
+    TaskHandler test(5, 5, 10, true);
 
-//    for (int i = 0; i < 1000; i++) {
-//        static WorldMap map;
-//        static TaskHandler tasker;
-//        cout << i<<" ";
-//        tasker.taskMapGeneration(map);
-//    }
-
-
-//    cin.ignore(); // Wait for user input before ending
     return 0;
 }
 
@@ -174,6 +163,10 @@ void GenerateForest(const int x, const int y) {
 
 
 /** TODO
+ Do loader stuff AND make it bit efficient
+
+ TIME EACH THREAD IDLE TIME
+
  JUST do godamnn buckets. Currently, each task is so fast that the delay and overhead from multithreading just obliterates performance
  No need to even work-steal at the current stage. One thread is constantly caught up on the work.
  Ooh use multiple threads to distribute at once? Maybe even one loader thread per buckets(system should balance loads)
@@ -203,5 +196,4 @@ void GenerateForest(const int x, const int y) {
  Figure out formatting library, mutex, atomic
  Make Forest "Node" that keeps track of stats and updates? Also has map of forest. Simple 0 / 1 binary map
 
- IMPELMENT TRY/CATCH IN TASKHANDLER
 **/
