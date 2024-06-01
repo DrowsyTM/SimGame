@@ -29,16 +29,17 @@ public:
 //    void waitOnEmpty();
 
 private:
-    int num_workers;
-    std::vector<std::jthread> workers;
-    std::vector<std::vector<std::unique_ptr<Task>>> work_arrays;
-    std::vector<bool> work_flags; //single flag for each bucket
+    int num_workers; // equivalent to # of buckets
+    std::vector<std::jthread> workers; // collects worker threads
+    std::vector<std::vector<std::unique_ptr<Task>>> work_arrays; // Buckets for each worker
+    std::vector<std::atomic<bool>> working_flag; //single flag for each bucket
+
+
 
     int num_loaders;
     std::vector<std::jthread> loaders;
     std::vector<std::vector<std::unique_ptr<Task>>> load_arrays;
     std::vector<std::condition_variable> loader_cvs; //Corresponds to each loader
-//    std::vector<std::vector<bool>> load_flags; //don't actually need this with single loader?
 
     //In fact, multiple loaders can load up muliple different load arrays and then just send
     // it to the first available worker. Implement this later, currently 1:1

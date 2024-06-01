@@ -12,10 +12,12 @@ TaskHandler::TaskHandler(int workerCount, int loaderCount, int bucketSize, bool 
         : num_workers{workerCount}, num_loaders{loaderCount}, bucket_size(bucketSize), logger_flag{doLogging},
           stop_flag{false}, loader_cvs{}, loaders{}, workers{} {
 
-    loadLogger();
+    loadLogger(); //Loads logging system
 
-    //Loads workers and work_arrays
-    loadWorkers();
+    loadWorkers(); //Loads workers and work_arrays
+    loadLoaderArrays(); //Load load_arrays
+
+    std::cout << load_arrays.size();
 }
 
 TaskHandler::~TaskHandler() {
@@ -64,21 +66,22 @@ void TaskHandler::loadMapTasks(WorldMap &map, int ID) {
 
     //For amount = 250, ID is 0-9
     //0-249, 250-499, 500-749 ... 2250-2499
-
     int row = 0;
     for (int chunk = start; chunk < start + chunkCount; chunk++) {
         if (row != bucket_size) { //Not at end of bucket
             load_arrays[ID][row] = std::make_unique<TaskTerrainGen>(row, &map);
-//            load_flags[ID][row] = 1;
-            //unnecessary for 1:1
-            row++;
+            row++; //Iterate bucket row
 
         } else { //End of bucket
-            row = 0;
-            while (work_flags[ID]) {
 
+//            int iter = 0;
+            while (working_flag[ID].load(std::memory_order_relaxed)) { //While worker is working - flag is true
+                std::this_thread::sleep_for(std::chrono::nanoseconds(1));
             }
-            // ooh we send a notification to unlock a specific thread which locks itself when its emptY?
+            work_arrays[ID] = std::move(load_arrays[ID]);
+            working_flag[ID].store(true, std::memory_order_relaxed);
+            //Worker should now start working
+            row = 0;
         }
 
 
@@ -89,13 +92,16 @@ void TaskHandler::loadWorkers() {
     work_arrays.resize(num_workers);
     for (int i = 0; i < num_workers; i++) {
         work_arrays[i].resize(bucket_size); //
-    }
+    } //Fill up the first vec with empty Task pointer vecs.
 
-    work_flags.resize(num_workers, 0);
+
+    std::vector<std::atomic<bool>> temp(num_workers);
+    working_flag.swap(temp); //atomics can't be moved...
 
     for (int i = 0; i < num_workers; i++) {
         workers.emplace_back([this]() { /**work function with ID**/ });
     }
+
 
     logger << "Loaded workers, work arrays, and work_flags\n";
 
@@ -106,12 +112,6 @@ void TaskHandler::loadLoaderArrays() {
     for (int i = 0; i < num_loaders; i++) {
         load_arrays[i].resize(bucket_size); //
     }
-
-    // NOT necessary for 1:1, will implement later tho
-//    load_flags.resize(num_loaders);
-//    for (int i = 0; i < num_loaders; i++) {
-//        load_flags[i].resize(bucket_size, 0); //
-//    }
 }
 
 void TaskHandler::loadLogger() {
