@@ -1,2 +1,2 @@
 # SimGame
-name pending. WIP game to practice programming in C++
+name pending. WIP game with multithreading to practice programming in C++
