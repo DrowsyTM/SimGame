@@ -22,30 +22,32 @@ TaskHandler::TaskHandler(int workerCount, int loaderCount, int bucketSize, bool 
 
 TaskHandler::~TaskHandler() {
     stop_flag.store(true);
-
+    if (logger_flag.load(std::memory_order_relaxed)) {
+        logger << "Stop flag set" << std::endl;
+    }
     int ID = 0;
     for (auto &worker: workers) {
-        if (workers[ID].joinable()) {
-            workers[ID].join();
-        } else if (logger_flag.load(std::memory_order_relaxed)) {
-            std::lock_guard lock(logger_mtx);
-            logger << "Worker " << ID << "didn't join" << std::endl;
+        if (logger_flag.load(std::memory_order_relaxed)) {
+            logger << "Joining thread " << ID << "..." << std::endl;
+        }
+        if (worker.joinable()) {
+            worker.join();
         }
         ID++;
     }
+    if (logger_flag.load(std::memory_order_relaxed)) {
+        logger << "Workers joined" << std::endl;
+    }
+
     if (!loaders.empty()) {
         for (int i = 0; i < num_loaders; i++) {
             if (loaders[i].joinable()) {
                 loaders[i].join();
-            } else if (logger_flag.load(std::memory_order_relaxed)) {
-                std::lock_guard lock(logger_mtx);
-                logger << "Loader " << i << "didn't join" << std::endl;
             }
-
         }
     } else if (logger_flag.load(std::memory_order_relaxed)) {
         std::lock_guard lock(logger_mtx);
-        logger << "No loaders present at destruction\n";
+        logger << "Loaders never initialized" << std::endl;
     }
     if (logger_flag.load(std::memory_order_relaxed)) {
         logger << "Destructor fully executed" << std::endl;
@@ -60,7 +62,7 @@ void TaskHandler::LoadingBay(WorldMap &map) {
     }
     if (logger_flag.load(std::memory_order_relaxed)) {
         std::lock_guard lock(logger_mtx);
-        logger << "Loaded loaders"<<std::endl;
+        logger << "Loaded loaders" << std::endl;
     }
 }
 
@@ -87,7 +89,8 @@ void TaskHandler::loadMapTasks(WorldMap &map, int ID) {
         if (row != bucket_size) { //Not at end of bucket
             load_arrays[ID][row] = std::make_unique<TaskTerrainGen>(chunk, &map);
             row++; //Iterate bucket row
-        } else { //End of bucket
+        }
+        if (row == bucket_size) { //End of bucket
 //            int iter = 0;
 
             while (working_flag[ID].load(std::memory_order_relaxed)) { //While worker is working - flag is true
@@ -98,7 +101,6 @@ void TaskHandler::loadMapTasks(WorldMap &map, int ID) {
             load_arrays[ID].resize(bucket_size);
             //Worker should now start working
             row = 0;
-            chunk--;
         }
     }
 }
@@ -133,7 +135,7 @@ void TaskHandler::loadLoaderArrays() {
     }
     if (logger_flag) {
         std::lock_guard lock(logger_mtx);
-        logger << "Loaded loader arrays"<<std::endl;
+        logger << "Loaded loader arrays" << std::endl;
     }
 }
 
@@ -154,6 +156,7 @@ void TaskHandler::loadLogger() {
 }
 
 void TaskHandler::workerThread(int ID) {
+
     while (!stop_flag.load(std::memory_order_relaxed)) {
         int iter = 0;
         //While corresponding flag is false (default) & < 0.1 ms of wait
@@ -166,17 +169,28 @@ void TaskHandler::workerThread(int ID) {
                 std::lock_guard lock(logger_mtx);
                 logger << "Thread " << ID << " went to long wait\n";
             }
-            while (!working_flag[ID].load(std::memory_order_relaxed) && !stop_flag.load(std::memory_order_relaxed)) {
+            while (!working_flag[ID].load(std::memory_order_relaxed)) {
                 std::this_thread::sleep_for(std::chrono::microseconds(1));
+                if (stop_flag.load(std::memory_order_relaxed)){
+                    return;
+                }
             }
         }
         iter = 0;
 
 
         for (auto &task: work_arrays[ID]) {
-            task->execute();
+            task->execute(); //check if null? If array not full
         }
-
         working_flag[ID].store(false, std::memory_order_relaxed);
     }
+
 }
+
+/** TODO
+ * Work with alternative ratios of worker/loaders,
+ * Work with map not a multiple of chunks
+ * Batches rather than static arrays
+ *
+ *
+ */

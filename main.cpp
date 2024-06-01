@@ -91,14 +91,18 @@ void ProfileFunctions() {
 int main() { //Wait I've been calling map.draw() this whole time but this could cause read/write race conditions?
 
 //    ProfileFunctions();
-    TaskHandler tasker(1, 1, 10, true);
     WorldMap map;
+    {
+        TaskHandler tasker(10, 10, 10, true);
 
-    tasker.LoadingBay(map);
 
-    this_thread::sleep_for(100ms);
-    map.draw();
-    map.printMap(); //can't call this while map is being generated. I gotta figure out a restriction just in case;
+        tasker.LoadingBay(map);
+
+        this_thread::sleep_for(100ms);
+        map.draw();
+    }
+
+//    map.printMap(); //can't call this while map is being generated. I gotta figure out a restriction just in case;
 
     //map function to output whole map into a txt file? Ok
     // f me if I need to manage race conditions for map as well if I access it while generating it.
@@ -107,9 +111,6 @@ int main() { //Wait I've been calling map.draw() this whole time but this could 
     // I know games have some sort of system where they execute certain updates in a certain order. If I have consistent
     // draws, it probably wouldn't be hard to do it with one function.
     // But that's as long as I keep my GameLoop one one thread
-
-
-    cin.ignore();
 
     return 0;
 }
@@ -183,7 +184,11 @@ void GenerateForest(const int x, const int y) {
 /** TODO
  Do loader stuff AND make it bit efficient
 
+ Get rid of logger when I actually get things working? check performance difference?
+
  Async might be a better way of doing some of my things.
+
+ Currently map size is multiple of chunk_size. Fix that. Maybe make chunk_size dynamically sized.
 
  JUST do godamnn buckets. Currently, each task is so fast that the delay and overhead from multithreading just obliterates performance
  No need to even work-steal at the current stage. One thread is constantly caught up on the work.

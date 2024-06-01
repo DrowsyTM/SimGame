@@ -1,12 +1,12 @@
 #include "WorldMap.h"
 
 //Public
-WorldMap::WorldMap() : WorldMap(750) {} //multiple of chunk_size <- change how this works
+WorldMap::WorldMap() : WorldMap(300) {} //multiple of chunk_size <- change how this works
 
 WorldMap::WorldMap(int size)
         : map{}, map_size{size}, lookX{0}, lookY{0}, screen_size{35}, initialized{false}, chunk_size{15} {
 
-    map.resize(map_size, std::vector<terrain>(map_size, BLANK));
+    map.resize(map_size, std::vector<terrain>(map_size, BLANK)); //Map default
     num_chunks = size * size / 15 / 15;
     spawnRandomzier(lookX, lookY);
 }
@@ -28,6 +28,10 @@ void WorldMap::threadGenerateTerrain(int chunk) {
     int xOffset = (chunk % chunksDimension) * chunk_size;
     // Chunk 0-49 = 0, 50-99 = 1, etc * 15
     int yOffset = (chunk / chunksDimension) * chunk_size;
+
+    if (chunk >= 2488) {
+
+    }
 
     //maybe make the conditions use offset. Might be faster
     for (int y = 0; y < chunk_size; y++) {
