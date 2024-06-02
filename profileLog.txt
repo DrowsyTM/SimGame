@@ -111,5 +111,152 @@ Avg WorldMap Draw Time: 	0.813677 ms
 Avg tHandler Build Time: 	0.381257 ms
 Avg ThreadGeneration Time: 	17.721 ms
 
+[ New TaskHandler Loader System 10W,10L,10B ]
+Sat Jun 01 15:52:38 2024
 
+Avg WorldMap Build Time: 	0.069547 ms
+Avg WorldMap Draw Time: 	0.494543 ms
+Avg tHandler Build Time: 	SKIP
+Generation(+Dest) Time: 	0.005855 ms
+
+
+
+[ New TaskHandler Loader System 10W,10L,10B ]
+Sat Jun 01 16:02:53 2024
+
+Avg WorldMap Build Time: 	0.068954 ms
+Avg WorldMap Draw Time: 	0.455801 ms
+Avg tHandler Build Time: 	SKIP
+Avg tDestructor Time: 		3.17543 ms
+Avg ThreadedGen Time:   	2.09804 ms
+
+[ 1W,1L,10B ]
+Sat Jun 01 16:04:34 2024
+
+Avg WorldMap Build Time: 	0.072756 ms
+Avg WorldMap Draw Time: 	0.494529 ms
+Avg tHandler Build Time: 	SKIP
+Avg tDestructor Time: 		0.04663 ms
+Avg ThreadedGen Time: 		3.52894 ms
+
+[ 1W,1L,50B ]
+Sat Jun 01 16:04:56 2024
+
+Avg WorldMap Build Time: 	0.072348 ms
+Avg WorldMap Draw Time: 	0.453462 ms
+Avg tHandler Build Time: 	SKIP
+Avg tDestructor Time: 		0.051345 ms
+Avg ThreadedGen Time: 		0.497059 ms
+
+[ W10,L10,B30 ]
+Sat Jun 01 16:08:58 2024
+
+Avg WorldMap Build Time: 	0.074989 ms
+Avg WorldMap Draw Time: 	0.437206 ms
+Avg tHandler Build Time: 	SKIP
+Avg tDestructor Time: 		3.33454 ms
+Avg ThreadedGen Time: 		1.97777 ms
+
+[ 2,2,50 ]
+Sat Jun 01 16:09:34 2024
+
+Avg WorldMap Build Time: 	0.073825 ms
+Avg WorldMap Draw Time: 	0.49739 ms
+Avg tHandler Build Time: 	SKIP
+Avg tDestructor Time: 		0.159763 ms
+Avg ThreadedGen Time: 		2.9426 ms
+
+
+[ 1,1,400 ]
+Sat Jun 01 16:10:41 2024
+
+Avg WorldMap Build Time: 	0.073932 ms
+Avg WorldMap Draw Time: 	0.491565 ms
+Avg tHandler Build Time: 	SKIP
+Avg tDestructor Time: 		0.051187 ms
+Avg ThreadedGen Time: 		0.287381 ms
+
+[ 2,2,200 ]
+Sat Jun 01 16:10:57 2024
+
+Avg WorldMap Build Time: 	0.076398 ms
+Avg WorldMap Draw Time: 	0.475453 ms
+Avg tHandler Build Time: 	SKIP
+Avg tDestructor Time: 		0.102144 ms
+Avg ThreadedGen Time: 		0.182591 ms
+
+
+[ 4,4,100 ]
+Sat Jun 01 16:13:17 2024
+
+Avg WorldMap Build Time: 	SKIP
+Avg WorldMap Draw Time: 	SKIP
+Avg tHandler Build Time: 	SKIP
+Avg tDestructor Time: 		3.07337 ms
+Avg ThreadedGen Time: 		0.418097 ms
+
+
+[ 2,2,100 ]
+Sat Jun 01 16:14:57 2024
+
+Avg WorldMap Build Time: 	SKIP
+Avg WorldMap Draw Time: 	SKIP
+Avg tHandler Build Time: 	SKIP
+Avg tDestructor Time: 		0.092924 ms
+Avg ThreadedGen Time: 		0.620608 ms
+
+[ 2,2,100 ChunkSize 30 ]
+Sat Jun 01 16:16:37 2024
+
+Avg WorldMap Build Time: 	SKIP
+Avg WorldMap Draw Time: 	SKIP
+Avg tHandler Build Time: 	SKIP
+Avg tDestructor Time: 		0.066756 ms
+Avg ThreadedGen Time: 		3.34221 ms
+
+[ 2,2,10,S30 ]
+Sat Jun 01 16:47:20 2024
+
+Avg WorldMap Build Time: 	SKIP
+Avg WorldMap Draw Time: 	SKIP
+Avg tHandler Build Time: 	SKIP
+Avg tDestructor Time: 		0.093138 ms
+Avg ThreadedGen Time: 		3.12278 ms
+
+
+[ 2,2,50,C30 ]
+Sat Jun 01 16:48:30 2024
+
+Avg WorldMap Build Time: 	SKIP
+Avg WorldMap Draw Time: 	SKIP
+Avg tHandler Build Time: 	SKIP
+Avg tDestructor Time: 		0.074152 ms
+Avg ThreadedGen Time: 		0.155367 ms
+
+[ 4,4,25,C30 ]
+Sat Jun 01 16:49:09 2024
+
+Avg WorldMap Build Time: 	SKIP
+Avg WorldMap Draw Time: 	SKIP
+Avg tHandler Build Time: 	SKIP
+Avg tDestructor Time: 		2.98328 ms
+Avg ThreadedGen Time: 		0.442365 ms
+
+[ W2,L2,B50,C30 - no long wait ]
+Sat Jun 01 16:57:44 2024
+
+Avg WorldMap Build Time: 	SKIP
+Avg WorldMap Draw Time: 	SKIP
+Avg tHandler Build Time: 	SKIP
+Avg tDestructor Time: 		0.057665 ms
+Avg ThreadedGen Time: 		0.159167 ms
+
+[ W2,L2,B50,C30 - with builder]
+Sat Jun 01 17:04:41 2024
+
+Avg WorldMap Build Time: 	SKIP
+Avg WorldMap Draw Time: 	SKIP
+Avg tHandler Build Time: 	0.106876 ms
+Avg tDestructor Time: 		0.079653 ms
+Avg ThreadedGen Time: 		0.157727 ms
 
