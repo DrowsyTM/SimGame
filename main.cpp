@@ -28,7 +28,7 @@ int forestAmount = 0;
 int GameTick();
 
 
-void ProfileFunctions() {
+void ProfileFunctions(int workers, int loaders, int bucket_size) {
 
     const int iterations = 1000;
     double time = 0; //ms
@@ -44,44 +44,64 @@ void ProfileFunctions() {
 
     logFile << "[ " << input << " ]" << "\n" << ctime(&timeNow) << "\n";
 
-    //Profile Map Constructor + Destructor
     auto start = high_resolution_clock::now();
-    for (int i = 0; i < iterations; i++) {
-        WorldMap test;
-    }
     auto stop = high_resolution_clock::now();
-    time = static_cast<double>(duration_cast<microseconds>(stop - start).count()) / 1000;
-    logFile << "Avg WorldMap Build Time: \t" << time / iterations << " ms\n";
+
+    //Profile Map Constructor + Destructor
+//    auto start = high_resolution_clock::now();
+//    for (int i = 0; i < iterations; i++) {
+//        WorldMap test;
+//    }
+//    auto stop = high_resolution_clock::now();
+//    time = static_cast<double>(duration_cast<microseconds>(stop - start).count()) / 1000;
+    logFile << "Avg WorldMap Build Time: \tSKIP" << endl;
 
     //Profile Map Draw
-    start = high_resolution_clock::now();
-    for (int i = 0; i < iterations; i++) {
-        static WorldMap test;
-        test.draw();
-    }
-    stop = high_resolution_clock::now();
-    time = static_cast<double>(duration_cast<microseconds>(stop - start).count()) / 1000;
-    logFile << "Avg WorldMap Draw Time: \t" << time / iterations << " ms" << endl;
+//    start = high_resolution_clock::now();
+//    for (int i = 0; i < iterations; i++) {
+//        static WorldMap test;
+//        test.draw();
+//    }
+//    stop = high_resolution_clock::now();
+//    time = static_cast<double>(duration_cast<microseconds>(stop - start).count()) / 1000;
+    logFile << "Avg WorldMap Draw Time: \tSKIP" << endl;
 
     //Profile TaskHandler Builder
-    start = high_resolution_clock::now();
+//    start = high_resolution_clock::now();
+//    for (int i = 0; i < iterations; i++) {
+//        TaskHandler test(10, 10, 10);
+//    }
+//    stop = high_resolution_clock::now();
+//    time = static_cast<double>(duration_cast<microseconds>(stop - start).count()) / 1000;
+    logFile << "Avg tHandler Build Time: \tSKIP" << endl;
+
+    //Profile destructor
+    double total = 0;
     for (int i = 0; i < iterations; i++) {
-        TaskHandler test(1, 1, 10);
+        {
+            TaskHandler tester(workers, loaders, bucket_size);
+            start = high_resolution_clock::now();
+        }
+        stop = high_resolution_clock::now();
+        total += static_cast<double>(duration_cast<microseconds>(stop - start).count()) / 1000;
     }
-    stop = high_resolution_clock::now();
-    time = static_cast<double>(duration_cast<microseconds>(stop - start).count()) / 1000;
-    logFile << "Avg tHandler Build Time: \t" << time / iterations << " ms\n";
+    double destructorTime = total / iterations;
+    logFile << "Avg tDestructor Time: \t\t" << destructorTime << " ms" << endl;
+
 
     //Profile Threaded Map Generation
-    start = high_resolution_clock::now();
+    total = 0;
     for (int i = 0; i < iterations; i++) {
-        static WorldMap test;
-        static TaskHandler tester(1, 1, 10);
-        tester.LoadingBay(test);
+        WorldMap test;
+        {
+            TaskHandler tester(workers, loaders, bucket_size);
+            start = high_resolution_clock::now();
+            tester.LoadingBay(test);
+        }
+        stop = high_resolution_clock::now();
+        total += static_cast<double>(duration_cast<microseconds>(stop - start).count()) / 1000;
     }
-    stop = high_resolution_clock::now();
-    time = static_cast<double>(duration_cast<microseconds>(stop - start).count()) / 1000;
-    logFile << "Avg ThreadGeneration Time: \t" << time / iterations << " ms\n";
+    logFile << "Avg ThreadedGen Time: \t\t" << total / iterations - destructorTime << " ms" << endl;
 
     logFile << endl;
     logFile.close();
@@ -90,17 +110,17 @@ void ProfileFunctions() {
 
 int main() { //Wait I've been calling map.draw() this whole time but this could cause read/write race conditions?
 
-//    ProfileFunctions();
-    WorldMap map;
-    {
-        TaskHandler tasker(10, 10, 10, true);
-
-
-        tasker.LoadingBay(map);
-
-        this_thread::sleep_for(100ms);
-        map.draw();
-    }
+    ProfileFunctions(2, 2, 50);
+//    WorldMap map;
+//    {
+//        TaskHandler tasker(2, 2, 10, true);
+//
+//
+//        tasker.LoadingBay(map);
+//
+//        this_thread::sleep_for(100ms);
+//        map.draw();
+//    }
 
 //    map.printMap(); //can't call this while map is being generated. I gotta figure out a restriction just in case;
 

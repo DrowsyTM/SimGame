@@ -21,11 +21,26 @@ TaskHandler::TaskHandler(int workerCount, int loaderCount, int bucketSize, bool 
 }
 
 TaskHandler::~TaskHandler() {
+    //Loaders first currently so that workers finish all their work
+    //Loaders finish on their own eventually
+    if (!loaders.empty()) {
+        for (int i = 0; i < num_loaders; i++) {
+            if (loaders[i].joinable()) {
+                loaders[i].join();
+            }
+        }
+    } else if (logger_flag.load(std::memory_order_relaxed)) {
+        std::lock_guard lock(logger_mtx);
+        logger << "Loaders never initialized" << std::endl;
+    }
+    //Flag to stop workers
     stop_flag.store(true);
+
     if (logger_flag.load(std::memory_order_relaxed)) {
         logger << "Stop flag set" << std::endl;
     }
     int ID = 0;
+
     for (auto &worker: workers) {
         if (logger_flag.load(std::memory_order_relaxed)) {
             logger << "Joining thread " << ID << "..." << std::endl;
@@ -39,16 +54,6 @@ TaskHandler::~TaskHandler() {
         logger << "Workers joined" << std::endl;
     }
 
-    if (!loaders.empty()) {
-        for (int i = 0; i < num_loaders; i++) {
-            if (loaders[i].joinable()) {
-                loaders[i].join();
-            }
-        }
-    } else if (logger_flag.load(std::memory_order_relaxed)) {
-        std::lock_guard lock(logger_mtx);
-        logger << "Loaders never initialized" << std::endl;
-    }
     if (logger_flag.load(std::memory_order_relaxed)) {
         logger << "Destructor fully executed" << std::endl;
         logger.close();
@@ -57,11 +62,13 @@ TaskHandler::~TaskHandler() {
 }
 
 void TaskHandler::LoadingBay(WorldMap &map) {
-    for (int i = 0; i < num_loaders; i++) {
-        loaders.emplace_back([this, &map, i]() { loadMapTasks(map, i); });
+    if (loaders.empty()) { //doesn't make it work but prevents too many problems I think
+        for (int i = 0; i < num_loaders; i++) {
+            loaders.emplace_back([this, &map, i]() { loadMapTasks(map, i); });
+        }
     }
-    if (logger_flag.load(std::memory_order_relaxed)) {
-        std::lock_guard lock(logger_mtx);
+
+    if (logger_flag) {
         logger << "Loaded loaders" << std::endl;
     }
 }
@@ -70,7 +77,7 @@ void TaskHandler::LoadingBay(WorldMap &map) {
 
 
 void TaskHandler::loadMapTasks(WorldMap &map, int ID) {
-    // chunkCount is how many chunks will be loaded by this laoder
+    // chunkCount is how many chunks will be loaded by this loader
     int chunkCount = map.numChunks() / num_loaders;
     int start = chunkCount * ID;
     int end = start + chunkCount;
@@ -85,6 +92,7 @@ void TaskHandler::loadMapTasks(WorldMap &map, int ID) {
 
     //Ok first of all we don't account for the for loop ending before we give the last Tasks
     // We have some ungenerated chunks, this might be why multithreading seems to break at the very end.
+    // ye what if bucket_size is > than the amount of chunks
     for (int chunk = start; chunk < end; chunk++) {
         if (row != bucket_size) { //Not at end of bucket
             load_arrays[ID][row] = std::make_unique<TaskTerrainGen>(chunk, &map);
@@ -122,10 +130,10 @@ void TaskHandler::loadWorkers() {
         workers.emplace_back([this, i]() { this->workerThread(i); });
     }
 
-    {
-        std::lock_guard lock(logger_mtx);
+    if (logger_flag) {
         logger << "Loaded workers, work arrays, and work_flags\n";
     }
+
 }
 
 void TaskHandler::loadLoaderArrays() {
@@ -133,7 +141,7 @@ void TaskHandler::loadLoaderArrays() {
     for (int i = 0; i < num_loaders; i++) {
         load_arrays[i].resize(bucket_size); //
     }
-    if (logger_flag) {
+    if (logger_flag.load(std::memory_order_relaxed)) {
         std::lock_guard lock(logger_mtx);
         logger << "Loaded loader arrays" << std::endl;
     }
@@ -165,13 +173,9 @@ void TaskHandler::workerThread(int ID) {
             iter++;
         }
         if (iter >= 100000) { //Waiting function to not waste resources.
-            if (logger_flag.load(std::memory_order_relaxed)) {
-                std::lock_guard lock(logger_mtx);
-                logger << "Thread " << ID << " went to long wait\n";
-            }
             while (!working_flag[ID].load(std::memory_order_relaxed)) {
                 std::this_thread::sleep_for(std::chrono::microseconds(1));
-                if (stop_flag.load(std::memory_order_relaxed)){
+                if (stop_flag.load(std::memory_order_relaxed)) {
                     return;
                 }
             }
@@ -188,9 +192,26 @@ void TaskHandler::workerThread(int ID) {
 }
 
 /** TODO
+ * I suspect that the main delay is while the worker is waiting on the loader.
+ * That's why bigger bucket leads to massive improvement
+ * It's the worker flipping its flag and then waiting for its array to be swapped.
+ * I gotta measure the execution time of all the steps. It's odd, feels like a 1ns wait is reasonable.
+ * We can have a set of arrays where the worker can always jump to the next one, loader fills up another one.
+ * Essentially worker should be able to instantly jump to next work with NO DELAY.
+ *
+ * If we load faster than worker works, we just load batch after batch. We can have an antomic flag just in case
+ * worker catches up.
+ *
+ * Destructor timing is super inconsistent.
+ *
  * Work with alternative ratios of worker/loaders,
  * Work with map not a multiple of chunks
  * Batches rather than static arrays
+ * Ability to clear the LoadingBay or Reuse loaders
+ * Loop that just executes any function given to it? As a "hold thread" object or omsething
+ * !!!Something to track when map is completed. The loaders or even the tasks could mark sections as "completed"
+ * Can't have workers * bucket_size > map_size, no checks for end of chunks
  *
- *
+ * As seen from the log, bucket size up is good. The contention for atomic or the wait time is causing problems.
+ * We probably want more loaders than workers, especially for super cheap tasks.
  */
