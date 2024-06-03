@@ -110,7 +110,7 @@ void ProfileFunctions(int workers, int loaders, int bucket_size) {
 
 int main() { //Wait I've been calling map.draw() this whole time but this could cause read/write race conditions?
 
-    ProfileFunctions(2, 2, 50);
+    ProfileFunctions(10, 10, 100);
 //    WorldMap map;
 //    {
 //        TaskHandler tasker(2, 2, 10, true);

@@ -192,6 +192,10 @@ void TaskHandler::workerThread(int ID) {
 }
 
 /** TODO
+ * First of all, lets not change anything and optimize the system for 100k on 100k. Look at single threading.
+ * Then use current system as benchmark for further changes.
+ * Also changes to current: bucket_size needs to work regardless of size of map.
+ *
  * I suspect that the main delay is while the worker is waiting on the loader.
  * That's why bigger bucket leads to massive improvement
  * It's the worker flipping its flag and then waiting for its array to be swapped.

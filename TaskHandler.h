@@ -59,6 +59,21 @@ private:
 
     void loadLogger();
 
+    //New funcs
+
+    //   1:1    holds batches   batches     item in batch
+    std::vector<std::vector<std::vector<std::unique_ptr<Task>>>> wArray;
+
+    //yeah I've been thinking and it does seem like the main limitation right now is that Worker can't work while loader
+    //swaps. If we use three vectors instead of two for this, it would actually be much better. The flag could flip to
+    //show which vector it is active in.
+    // Create a "step through" or visualization system that lets me work on this better? Just want to see which threads
+    // are active and which are inactive(we want inactive to approach 0)
+
+    //ehh figure this out on paper. I want rare/minimal interactions and NO DELAYS(so keep adding loaders till delay = 0)
+    //I could just do this manually for the terrain gen, but I want it to work with all Tasks
+    //We can easily estimate and split up work given map size. However, how do we optimize given an unkown /constant
+    //stream of tasks?
 
 };
 

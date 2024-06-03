@@ -260,3 +260,21 @@ Avg tHandler Build Time: 	0.106876 ms
 Avg tDestructor Time: 		0.079653 ms
 Avg ThreadedGen Time: 		0.157727 ms
 
+[ test ]
+Sun Jun 02 21:22:32 2024
+
+Avg WorldMap Build Time: 	SKIP
+Avg WorldMap Draw Time: 	SKIP
+Avg tHandler Build Time: 	SKIP
+Avg tDestructor Time: 		0.087536 ms
+Avg ThreadedGen Time: 		95.9063 ms
+
+[ test ]
+Sun Jun 02 21:28:42 2024
+
+Avg WorldMap Build Time: 	SKIP
+Avg WorldMap Draw Time: 	SKIP
+Avg tHandler Build Time: 	SKIP
+Avg tDestructor Time: 		3.19737 ms
+Avg ThreadedGen Time: 		1.78203 ms
+

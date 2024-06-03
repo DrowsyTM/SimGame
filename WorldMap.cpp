@@ -1,10 +1,10 @@
 #include "WorldMap.h"
 
 //Public
-WorldMap::WorldMap() : WorldMap(300) {} //multiple of chunk_size <- change how this works
+WorldMap::WorldMap() : WorldMap(1000) {} //multiple of chunk_size <- change how this works
 
 WorldMap::WorldMap(int size)
-        : map{}, map_size{size}, lookX{0}, lookY{0}, screen_size{35}, initialized{false}, chunk_size{30} {
+        : map{}, map_size{size}, lookX{0}, lookY{0}, screen_size{35}, initialized{false}, chunk_size{100} {
 
     map.resize(map_size, std::vector<terrain>(map_size, BLANK)); //Map default
     num_chunks = size * size / chunk_size / chunk_size;
