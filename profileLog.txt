@@ -278,3 +278,104 @@ Avg tHandler Build Time: 	SKIP
 Avg tDestructor Time: 		3.19737 ms
 Avg ThreadedGen Time: 		1.78203 ms
 
+[ 10k map dimension ]
+Mon Jun 03 07:20:49 2024
+10 Workers, 10 Loaders, 100 Bucket Size
+
+Avg WorldMap Build Time: 	SKIP
+Avg WorldMap Draw Time: 	SKIP
+Avg tHandler Build Time: 	SKIP
+Avg tDestructor Time: 		3.48223 ms
+Avg ThreadedGen Time: 		69.6337 ms
+
+[ 10k Map ]
+Mon Jun 03 07:31:37 2024
+4 Workers, 4 Loaders, 100 Bucket Size
+
+Avg WorldMap Build Time: 	SKIP
+Avg WorldMap Draw Time: 	SKIP
+Avg tHandler Build Time: 	SKIP
+Avg tDestructor Time: 		1.9361 ms
+Avg ThreadedGen Time: 		69.2802 ms
+
+[ 10k Map ]
+Mon Jun 03 07:36:28 2024
+10 Workers, 10 Loaders, 1000 Bucket Size
+
+Avg WorldMap Build Time: 	SKIP
+Avg WorldMap Draw Time: 	SKIP
+Avg tHandler Build Time: 	SKIP
+Avg tDestructor Time: 		3.63215 ms
+Avg ThreadedGen Time: 		31.4523 ms
+
+[ Dynamic num_chunks goal = 100 ]
+Mon Jun 03 07:46:28 2024
+10 Workers, 10 Loaders, 10 Bucket Size
+
+Avg WorldMap Build Time: 	SKIP
+Avg WorldMap Draw Time: 	SKIP
+Avg tHandler Build Time: 	SKIP
+Avg tDestructor Time: 		3.23794 ms
+Avg ThreadedGen Time: 		29.902 ms
+
+[ More info ]
+Mon Jun 03 12:52:28 2024
+Iterations: 100
+Map Side: 10000 | Total: 100000000
+10 Workers, 10 Loaders, 10 Bucket Size
+
+Avg WorldMap Build Time: 	SKIP
+Avg WorldMap Draw Time: 	SKIP
+Avg tHandler Build Time: 	SKIP
+Avg tDestructor Time: 		3.34309 ms
+Avg ThreadedGen Time: 		30.5906 ms
+
+
+[ test ]
+Mon Jun 03 13:35:51 2024
+Iterations: 100
+Map Side: 10000 | Total: 100000000
+10 Workers, 10 Loaders, 5 Bucket Size
+
+Avg WorldMap Build Time: 	SKIP
+Avg WorldMap Draw Time: 	SKIP
+Avg tHandler Build Time: 	SKIP
+Avg tDestructor Time: 		3.2347 ms
+Avg ThreadedGen Time: 		42.6444 ms
+
+[ test ]
+Mon Jun 03 13:39:03 2024
+Iterations: 100
+Map Side: 10000 | Total: 100000000
+5 Workers, 5 Loaders, 20 Bucket Size
+
+Avg WorldMap Build Time: 	SKIP
+Avg WorldMap Draw Time: 	SKIP
+Avg tHandler Build Time: 	SKIP
+Avg tDestructor Time: 		3.15119 ms
+Avg ThreadedGen Time: 		35.89 ms
+
+[ test ]
+Mon Jun 03 13:40:09 2024
+Iterations: 100
+Map Side: 10000 | Total: 100000000
+5 Workers, 5 Loaders, 10 Bucket Size
+
+Avg WorldMap Build Time: 	SKIP
+Avg WorldMap Draw Time: 	SKIP
+Avg tHandler Build Time: 	SKIP
+Avg tDestructor Time: 		3.10396 ms
+Avg ThreadedGen Time: 		47.0633 ms
+
+[ test ]
+Mon Jun 03 14:33:01 2024
+Iterations: 100
+Map Side: 10000 | Total: 100000000
+1 Workers, 1 Loaders, 100 Bucket Size
+
+Avg WorldMap Build Time: 	SKIP
+Avg WorldMap Draw Time: 	SKIP
+Avg tHandler Build Time: 	SKIP
+Avg tDestructor Time: 		0.04816 ms
+Avg ThreadedGen Time: 		156.271 ms
+

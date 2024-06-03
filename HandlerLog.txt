@@ -82,3 +82,905 @@ Loaded loader arrays
 Loaded loaders
 Thread 0 went to long wait
 Destructor fully executed
+
+
+Sat Jun 01 13:50:27 2024
+Workers: 10 | Loaders: 10 | Buckets: 10
+Loaded workers, work arrays, and work_flags
+Loaded loader arrays
+Loaded loaders
+
+
+Sat Jun 01 13:53:35 2024
+Workers: 1 | Loaders: 1 | Buckets: 10
+Loaded workers, work arrays, and work_flags
+Loaded loader arrays
+Loaded loaders
+
+
+Sat Jun 01 13:54:12 2024
+Workers: 1 | Loaders: 1 | Buckets: 10
+Loaded workers, work arrays, and work_flags
+Loaded loader arrays
+Loaded loaders
+
+
+Sat Jun 01 13:54:43 2024
+Workers: 1 | Loaders: 1 | Buckets: 10
+Loaded workers, work arrays, and work_flags
+Loaded loader arrays
+Loaded loaders
+
+
+Sat Jun 01 13:56:32 2024
+Workers: 1 | Loaders: 1 | Buckets: 10
+Loaded workers, work arrays, and work_flags
+Loaded loader arrays
+Loaded loaders
+
+
+Sat Jun 01 13:59:00 2024
+Workers: 1 | Loaders: 1 | Buckets: 10
+Loaded workers, work arrays, and work_flags
+Loaded loader arrays
+Loaded loaders
+Thread 0 went to long wait
+Destructor fully executed
+
+
+Sat Jun 01 14:01:13 2024
+Workers: 1 | Loaders: 1 | Buckets: 10
+Loaded workers, work arrays, and work_flags
+Loaded loader arrays
+Loaded loaders
+Thread 0 went to long wait
+Destructor fully executed
+
+
+Sat Jun 01 14:02:24 2024
+Workers: 1 | Loaders: 1 | Buckets: 10
+Loaded workers, work arrays, and work_flags
+Loaded loader arrays
+Loaded loaders
+
+
+Sat Jun 01 14:03:19 2024
+Workers: 1 | Loaders: 1 | Buckets: 10
+Loaded workers, work arrays, and work_flags
+Loaded loader arrays
+Loaded loaders
+Thread 0 went to long wait
+Destructor fully executed
+
+
+Sat Jun 01 14:05:56 2024
+Workers: 2 | Loaders: 2 | Buckets: 10
+Loaded workers, work arrays, and work_flags
+Loaded loader arrays
+Loaded loaders
+
+
+Sat Jun 01 14:07:36 2024
+Workers: 2 | Loaders: 2 | Buckets: 10
+Loaded workers, work arrays, and work_flags
+Loaded loader arrays
+Loaded loaders
+
+
+Sat Jun 01 14:09:17 2024
+Workers: 2 | Loaders: 2 | Buckets: 10
+Loaded workers, work arrays, and work_flags
+Loaded loader arrays
+Loaded loaders
+
+
+Sat Jun 01 14:09:45 2024
+Workers: 2 | Loaders: 2 | Buckets: 10
+Loaded workers, work arrays, and work_flags
+Loaded loader arrays
+Loaded loaders
+
+
+Sat Jun 01 14:09:52 2024
+Workers: 1 | Loaders: 1 | Buckets: 10
+Loaded workers, work arrays, and work_flags
+Loaded loader arrays
+Loaded loaders
+Thread 0 went to long wait
+Workers joined
+Destructor fully executed
+
+
+Sat Jun 01 14:10:52 2024
+Workers: 2 | Loaders: 2 | Buckets: 10
+Loaded workers, work arrays, and work_flags
+Loaded loader arrays
+Loaded loaders
+Thread 0 went to long wait
+Thread 1 went to long wait
+Stop flag set
+
+
+Sat Jun 01 14:13:40 2024
+Workers: 2 | Loaders: 2 | Buckets: 10
+Loaded workers, work arrays, and work_flags
+Loaded loader arrays
+Loaded loaders
+Thread 1 went to long wait
+Thread 0 went to long wait
+Stop flag set
+Joining thread 0...
+
+
+Sat Jun 01 14:17:51 2024
+Workers: 2 | Loaders: 2 | Buckets: 10
+Loaded workers, work arrays, and work_flags
+Loaded loader arrays
+Loaded loaders
+Thread 0 went to long wait
+Thread 1 went to long wait
+Stop flag set
+Joining thread 0...
+
+
+Sat Jun 01 14:18:03 2024
+Workers: 2 | Loaders: 2 | Buckets: 10
+Loaded workers, work arrays, and work_flags
+Loaded loader arrays
+Loaded loaders
+Thread 1 went to long wait
+Thread 0 went to long wait
+Stop flag set
+Joining thread 0...
+
+
+Sat Jun 01 14:20:38 2024
+Workers: 2 | Loaders: 2 | Buckets: 10
+Loaded workers, work arrays, and work_flags
+Loaded loader arrays
+Loaded loaders
+Thread 0 went to long wait
+Thread 1 went to long wait
+Stop flag set
+Joining thread 0...
+
+
+Sat Jun 01 14:21:15 2024
+Workers: 2 | Loaders: 2 | Buckets: 10
+Loaded workers, work arrays, and work_flags
+Loaded loader arrays
+Loaded loaders
+Thread 0 went to long wait
+Thread 1 went to long wait
+Stop flag set
+Joining thread 0...
+
+
+Sat Jun 01 14:22:27 2024
+Workers: 2 | Loaders: 2 | Buckets: 10
+Loaded workers, work arrays, and work_flags
+Loaded loader arrays
+Loaded loaders
+Thread 1 went to long wait
+Thread 0 went to long wait
+Stop flag set
+Joining thread 0...
+
+
+Sat Jun 01 14:23:04 2024
+Workers: 2 | Loaders: 2 | Buckets: 10
+Loaded workers, work arrays, and work_flags
+Loaded loader arrays
+Loaded loaders
+Thread 1 went to long wait
+Thread 0 went to long wait
+Stop flag set
+Joining thread 0...
+
+
+Sat Jun 01 14:24:26 2024
+Workers: 2 | Loaders: 2 | Buckets: 10
+Loaded workers, work arrays, and work_flags
+Loaded loader arrays
+Loaded loaders
+Thread 1 went to long wait
+Thread 0 went to long wait
+Stop flag set
+Joining thread 0...
+
+
+Sat Jun 01 14:25:22 2024
+Workers: 2 | Loaders: 2 | Buckets: 10
+Loaded workers, work arrays, and work_flags
+Loaded loader arrays
+Loaded loaders
+Thread 1 went to long wait
+Thread 0 went to long wait
+Stop flag set
+Joining thread 0...
+
+
+Sat Jun 01 14:26:34 2024
+Workers: 2 | Loaders: 2 | Buckets: 10
+Loaded workers, work arrays, and work_flags
+Loaded loader arrays
+Loaded loaders
+Stop flag set
+Joining thread 0...
+
+
+Sat Jun 01 14:27:33 2024
+Workers: 2 | Loaders: 2 | Buckets: 10
+Loaded workers, work arrays, and work_flags
+Loaded loader arrays
+Loaded loaders
+Thread 1 went to long wait
+Thread 0 went to long wait
+Stop flag set
+Joining thread 0...
+
+
+Sat Jun 01 14:28:39 2024
+Workers: 2 | Loaders: 2 | Buckets: 10
+Loaded workers, work arrays, and work_flags
+Loaded loader arrays
+Loaded loaders
+Thread 0 went to long wait
+Thread 1 went to long wait
+Stop flag set
+
+
+Sat Jun 01 14:28:41 2024
+Workers: 2 | Loaders: 2 | Buckets: 10
+Loaded workers, work arrays, and work_flags
+Loaded loader arrays
+Loaded loaders
+Thread 1 went to long wait
+Thread 0 went to long wait
+Stop flag set
+
+
+Sat Jun 01 14:28:43 2024
+Workers: 2 | Loaders: 2 | Buckets: 10
+Loaded workers, work arrays, and work_flags
+Loaded loader arrays
+Loaded loaders
+Thread 1 went to long wait
+Thread 0 went to long wait
+Stop flag set
+
+
+Sat Jun 01 14:29:11 2024
+Workers: 10 | Loaders: 10 | Buckets: 10
+Loaded workers, work arrays, and work_flags
+Loaded loader arrays
+Loaded loaders
+Thread 9 went to long wait
+Thread 6 went to long wait
+Thread 5 went to long wait
+Thread 7 went to long wait
+Thread 2 went to long wait
+Thread 3 went to long wait
+Thread 0 went to long wait
+Thread 4 went to long wait
+Thread 1 went to long wait
+Thread 8 went to long wait
+Stop flag set
+
+
+Sat Jun 01 14:29:14 2024
+Workers: 10 | Loaders: 10 | Buckets: 10
+Loaded workers, work arrays, and work_flags
+Loaded loader arrays
+Loaded loaders
+Thread 0 went to long wait
+Thread 3 went to long wait
+Thread 9 went to long wait
+Thread 4 went to long wait
+Thread 8 went to long wait
+Thread 5 went to long wait
+Thread 1 went to long wait
+Thread 2 went to long wait
+Thread 6 went to long wait
+Thread 7 went to long wait
+Stop flag set
+
+
+Sat Jun 01 14:38:48 2024
+Workers: 10 | Loaders: 10 | Buckets: 10
+Loaded workers, work arrays, and work_flags
+Loaded loader arrays
+Loaded loaders
+Thread 2 went to long wait
+Thread 1 went to long wait
+Thread 7 went to long wait
+Thread 4 went to long wait
+Thread 8 went to long wait
+Thread 3 went to long wait
+Thread 6 went to long wait
+Thread 0 went to long wait
+Thread 9 went to long wait
+Thread 5 went to long wait
+Stop flag set
+Joining thread 0...
+
+
+Sat Jun 01 14:38:56 2024
+Workers: 10 | Loaders: 10 | Buckets: 10
+Loaded workers, work arrays, and work_flags
+Loaded loader arrays
+Thread 4 went to long wait
+Thread 5 went to long wait
+Thread 3 went to long wait
+Thread 8 went to long wait
+Thread 2 went to long wait
+Thread 7 went to long wait
+Thread 6 went to long wait
+Thread 0 went to long wait
+Thread 9 went to long wait
+Loaded loaders
+Thread 2 went to long wait
+Thread 5 went to long wait
+Thread 9 went to long wait
+Thread 0 went to long wait
+Thread 1 went to long wait
+Thread 4 went to long wait
+Thread 6 went to long wait
+Thread 3 went to long wait
+Thread 7 went to long wait
+Thread 8 went to long wait
+Stop flag set
+Joining thread 0...
+
+
+Sat Jun 01 14:39:22 2024
+Workers: 10 | Loaders: 10 | Buckets: 10
+Loaded workers, work arrays, and work_flags
+Loaded loader arrays
+Loaded loaders
+Thread 6 went to long wait
+Thread 9 went to long wait
+Thread 1 went to long wait
+Thread 3 went to long wait
+Thread 4 went to long wait
+Thread 5 went to long wait
+Thread 0 went to long wait
+Thread 2 went to long wait
+Thread 8 went to long wait
+Thread 7 went to long wait
+Stop flag set
+Joining thread 0...
+Joining thread 1...
+Joining thread 2...
+Joining thread 3...
+Joining thread 4...
+Joining thread 5...
+Joining thread 6...
+Joining thread 7...
+Joining thread 8...
+Joining thread 9...
+Workers joined
+Destructor fully executed
+
+
+Sat Jun 01 14:40:03 2024
+Workers: 10 | Loaders: 10 | Buckets: 10
+Loaded workers, work arrays, and work_flags
+Loaded loader arrays
+Loaded loaders
+Thread 3 went to long wait
+Thread 6 went to long wait
+Thread 9 went to long wait
+Thread 7 went to long wait
+Thread 1 went to long wait
+Thread 0 went to long wait
+Thread 5 went to long wait
+Thread 2 went to long wait
+Thread 8 went to long wait
+Thread 4 went to long wait
+Stop flag set
+Joining thread 0...
+Joining thread 1...
+Joining thread 2...
+Joining thread 3...
+Joining thread 4...
+Joining thread 5...
+Joining thread 6...
+Joining thread 7...
+Joining thread 8...
+Joining thread 9...
+Workers joined
+Destructor fully executed
+
+
+Sat Jun 01 14:40:07 2024
+Workers: 10 | Loaders: 10 | Buckets: 10
+Loaded workers, work arrays, and work_flags
+Thread 3 went to long wait
+Thread 1 went to long wait
+Thread 0 went to long wait
+Thread 5 went to long wait
+Thread 2 went to long wait
+Thread 6 went to long wait
+Thread 4 went to long wait
+Thread 8 went to long wait
+Loaded loader arrays
+Loaded loaders
+Thread 5 went to long wait
+Thread 7 went to long wait
+Thread 0 went to long wait
+Thread 9 went to long wait
+Thread 4 went to long wait
+Thread 3 went to long wait
+Thread 1 went to long wait
+Thread 2 went to long wait
+Thread 8 went to long wait
+Thread 6 went to long wait
+Thread 7 went to long wait
+Thread 7 went to long wait
+Thread 9 went to long wait
+Stop flag set
+Joining thread 0...
+
+
+Sat Jun 01 14:41:04 2024
+Workers: 10 | Loaders: 10 | Buckets: 10
+Loaded workers, work arrays, and work_flags
+Loaded loader arrays
+Thread 1 went to long wait
+Thread 4 went to long wait
+Thread 3 went to long wait
+Thread 0 went to long wait
+Loaded loaders
+Thread 3 went to long wait
+Thread 1 went to long wait
+Thread 5 went to long wait
+Thread 0 went to long wait
+Thread 2 went to long wait
+Thread 4 went to long wait
+Thread 6 went to long wait
+Thread 9 went to long wait
+Thread 8 went to long wait
+Thread 7 went to long wait
+Stop flag set
+Joining thread 0...
+
+
+Sat Jun 01 14:41:11 2024
+Workers: 10 | Loaders: 10 | Buckets: 10
+Thread 5 went to long wait
+Thread 4 went to long wait
+Thread 1 went to long wait
+Loaded workers, work arrays, and work_flags
+Thread 2 went to long wait
+Loaded loader arrays
+Thread 0 went to long wait
+Thread 3 went to long wait
+Thread 7 went to long wait
+Thread 6 went to long wait
+Thread 8 went to long wait
+Thread 0 went to long wait
+Thread 9 went to long wait
+Loaded loaders
+
+
+Sat Jun 01 14:41:49 2024
+Workers: 10 | Loaders: 10 | Buckets: 10
+Thread 2 went to long wait
+Thread 5 went to long wait
+Thread 7 went to long wait
+Thread 1 went to long wait
+Thread 4 went to long wait
+Thread 0 went to long wait
+Loaded workers, work arrays, and work_flags
+Loaded loader arrays
+Thread 6 went to long wait
+Thread 3 went to long wait
+Thread 8 went to long wait
+Thread 0 went to long wait
+Thread 2 went to long wait
+Thread 1 went to long wait
+Thread 9 went to long wait
+Loaded loaders
+Thread 3 went to long wait
+Thread 5 went to long wait
+Thread 4 went to long wait
+Thread 6 went to long wait
+Thread 9 went to long wait
+Thread 8 went to long wait
+Thread 7 went to long wait
+Stop flag set
+
+
+Sat Jun 01 14:42:15 2024
+Workers: 10 | Loaders: 10 | Buckets: 10
+Thread 0 went to long wait
+Thread 1 went to long wait
+Thread 4 went to long wait
+Thread 3 went to long wait
+Thread 2 went to long wait
+Thread 6 went to long wait
+Thread 5 went to long wait
+Loaded workers, work arrays, and work_flags
+Loaded loader arrays
+Thread 8 went to long wait
+Thread 0 went to long wait
+Thread 7 went to long wait
+Thread 9 went to long wait
+Loaded loaders
+
+
+Sat Jun 01 14:43:36 2024
+Workers: 10 | Loaders: 10 | Buckets: 10
+Loaded workers, work arrays, and work_flags
+Loaded loader arrays
+Thread 6 went to long wait
+Loaded loaders
+
+
+Sat Jun 01 14:44:51 2024
+Workers: 10 | Loaders: 10 | Buckets: 10
+Thread 1 went to long wait
+Thread 4 went to long wait
+Thread 2 went to long wait
+Thread 0 went to long wait
+Thread 5 went to long wait
+Thread 3 went to long wait
+Loaded workers, work arrays, and work_flags
+Loaded loader arrays
+Thread 6 went to long wait
+Thread 7 went to long wait
+Thread 1 went to long wait
+Thread 9 went to long wait
+Thread 8 went to long wait
+Thread 5 went to long wait
+Thread 2 went to long wait
+Loaded loaders
+Thread 0 went to long wait
+Thread 4 went to long wait
+Thread 3 went to long wait
+Thread 6 went to long wait
+Thread 9 went to long wait
+Thread 7 went to long wait
+Thread 8 went to long wait
+Stop flag set
+
+
+Sat Jun 01 14:46:13 2024
+Workers: 10 | Loaders: 10 | Buckets: 10
+Thread 0 went to long wait
+Thread 2 went to long wait
+Thread 5 went to long wait
+Thread 3 went to long wait
+Thread 1 went to long wait
+Loaded workers, work arrays, and work_flags
+Loaded loader arrays
+Thread 4 went to long wait
+Thread 9 went to long wait
+Thread 8 went to long wait
+Thread 1 went to long wait
+Thread 0 went to long wait
+Thread 7 went to long wait
+Thread 6 went to long wait
+Loaded loaders
+
+
+Sat Jun 01 14:49:11 2024
+Workers: 10 | Loaders: 10 | Buckets: 10
+Loaded workers, work arrays, and work_flags
+Loaded loader arrays
+Loaded loaders
+Thread 2 went to long wait
+Thread 0 went to long wait
+Thread 6 went to long wait
+Thread 4 went to long wait
+Thread 7 went to long wait
+Thread 3 went to long wait
+Thread 8 went to long wait
+Thread 1 went to long wait
+Thread 9 went to long wait
+Thread 5 went to long wait
+Stop flag set
+Joining thread 0...
+Joining thread 1...
+Joining thread 2...
+Joining thread 3...
+Joining thread 4...
+Joining thread 5...
+Joining thread 6...
+Joining thread 7...
+Joining thread 8...
+Joining thread 9...
+Workers joined
+Destructor fully executed
+
+
+Sat Jun 01 14:56:51 2024
+Workers: 10 | Loaders: 10 | Buckets: 10
+Loaded workers, work arrays, and work_flags
+Loaded loader arrays
+Loaded loaders
+Thread 0 went to long wait
+Thread 2 went to long wait
+Thread 3 went to long wait
+Thread 8 went to long wait
+Thread 4 went to long wait
+Thread 7 went to long wait
+Thread 6 went to long wait
+Thread 1 went to long wait
+Thread 9 went to long wait
+Thread 5 went to long wait
+Stop flag set
+Joining thread 0...
+Joining thread 1...
+Joining thread 2...
+Joining thread 3...
+Joining thread 4...
+Joining thread 5...
+Joining thread 6...
+Joining thread 7...
+Joining thread 8...
+Joining thread 9...
+Workers joined
+Destructor fully executed
+
+
+Sat Jun 01 14:57:24 2024
+Workers: 10 | Loaders: 10 | Buckets: 10
+Loaded workers, work arrays, and work_flags
+Loaded loader arrays
+Loaded loaders
+Thread 6 went to long wait
+Thread 0 went to long wait
+Thread 7 went to long wait
+Thread 1 went to long wait
+Thread 5 went to long wait
+Thread 4 went to long wait
+Thread 3 went to long wait
+Thread 8 went to long wait
+Thread 2 went to long wait
+Thread 9 went to long wait
+Stop flag set
+Joining thread 0...
+Joining thread 1...
+Joining thread 2...
+Joining thread 3...
+Joining thread 4...
+Joining thread 5...
+Joining thread 6...
+Joining thread 7...
+Joining thread 8...
+Joining thread 9...
+Workers joined
+Destructor fully executed
+
+
+Sat Jun 01 15:13:31 2024
+Workers: 10 | Loaders: 10 | Buckets: 10
+Loaded workers, work arrays, and work_flags
+Loaded loader arrays
+Loaded loaders
+Stop flag set
+Joining thread 0...
+Joining thread 1...
+Joining thread 2...
+Joining thread 3...
+Joining thread 4...
+Joining thread 5...
+Joining thread 6...
+Joining thread 7...
+Joining thread 8...
+Joining thread 9...
+Workers joined
+Destructor fully executed
+
+
+Sat Jun 01 15:41:38 2024
+Workers: 10 | Loaders: 10 | Buckets: 10
+Loaded workers, work arrays, and work_flags
+Loaded loader arrays
+Loaded loaders
+Stop flag set
+Joining thread 0...
+Joining thread 1...
+Joining thread 2...
+Joining thread 3...
+Joining thread 4...
+Joining thread 5...
+Joining thread 6...
+Joining thread 7...
+Joining thread 8...
+Joining thread 9...
+Workers joined
+Destructor fully executed
+
+
+Sat Jun 01 15:41:59 2024
+Workers: 10 | Loaders: 10 | Buckets: 10
+Loaded workers, work arrays, and work_flags
+Loaded loader arrays
+Loaded loaders
+Stop flag set
+Joining thread 0...
+Joining thread 1...
+Joining thread 2...
+Joining thread 3...
+Joining thread 4...
+Joining thread 5...
+Joining thread 6...
+Joining thread 7...
+Joining thread 8...
+Joining thread 9...
+Workers joined
+Destructor fully executed
+
+
+Sat Jun 01 15:42:05 2024
+Workers: 10 | Loaders: 10 | Buckets: 10
+Loaded workers, work arrays, and work_flags
+Loaded loader arrays
+Loaded loaders
+Stop flag set
+Joining thread 0...
+Joining thread 1...
+Joining thread 2...
+Joining thread 3...
+Joining thread 4...
+Joining thread 5...
+Joining thread 6...
+Joining thread 7...
+Joining thread 8...
+Joining thread 9...
+Workers joined
+Destructor fully executed
+
+
+Sat Jun 01 15:42:13 2024
+Workers: 10 | Loaders: 10 | Buckets: 10
+Loaded workers, work arrays, and work_flags
+Loaded loader arrays
+Loaded loaders
+Stop flag set
+Joining thread 0...
+Joining thread 1...
+Joining thread 2...
+Joining thread 3...
+Joining thread 4...
+Joining thread 5...
+Joining thread 6...
+Joining thread 7...
+Joining thread 8...
+Joining thread 9...
+Workers joined
+Destructor fully executed
+
+
+Sat Jun 01 15:42:22 2024
+Workers: 10 | Loaders: 10 | Buckets: 10
+Loaded workers, work arrays, and work_flags
+Loaded loader arrays
+Loaded loaders
+Stop flag set
+Joining thread 0...
+Joining thread 1...
+Joining thread 2...
+Joining thread 3...
+Joining thread 4...
+Joining thread 5...
+Joining thread 6...
+Joining thread 7...
+Joining thread 8...
+Joining thread 9...
+Workers joined
+Destructor fully executed
+
+
+Sat Jun 01 15:42:26 2024
+Workers: 10 | Loaders: 10 | Buckets: 10
+Loaded workers, work arrays, and work_flags
+Loaded loader arrays
+Loaded loaders
+Stop flag set
+Joining thread 0...
+Joining thread 1...
+Joining thread 2...
+Joining thread 3...
+Joining thread 4...
+Joining thread 5...
+Joining thread 6...
+Joining thread 7...
+Joining thread 8...
+Joining thread 9...
+Workers joined
+Destructor fully executed
+
+
+Sat Jun 01 15:43:02 2024
+Workers: 10 | Loaders: 10 | Buckets: 10
+Loaded workers, work arrays, and work_flags
+Loaded loader arrays
+Loaded loaders
+Stop flag set
+Joining thread 0...
+Joining thread 1...
+Joining thread 2...
+Joining thread 3...
+Joining thread 4...
+Joining thread 5...
+Joining thread 6...
+Joining thread 7...
+Joining thread 8...
+Joining thread 9...
+Workers joined
+Destructor fully executed
+
+
+Sat Jun 01 16:44:00 2024
+Workers: 10 | Loaders: 10 | Buckets: 10
+Loaded workers, work arrays, and work_flags
+Loaded loader arrays
+Loaded loaders
+Stop flag set
+Joining thread 0...
+Joining thread 1...
+Joining thread 2...
+Joining thread 3...
+Joining thread 4...
+Joining thread 5...
+Joining thread 6...
+Joining thread 7...
+Joining thread 8...
+Joining thread 9...
+Workers joined
+Destructor fully executed
+
+
+Sat Jun 01 16:44:34 2024
+Workers: 10 | Loaders: 10 | Buckets: 10
+Loaded workers, work arrays, and work_flags
+Loaded loader arrays
+
+
+Sat Jun 01 16:45:24 2024
+Workers: 10 | Loaders: 10 | Buckets: 10
+Loaded workers, work arrays, and work_flags
+Loaded loader arrays
+
+
+Sat Jun 01 16:46:08 2024
+Workers: 10 | Loaders: 10 | Buckets: 10
+Loaded workers, work arrays, and work_flags
+Loaded loader arrays
+Loaded loaders
+Stop flag set
+Joining thread 0...
+Joining thread 1...
+Joining thread 2...
+Joining thread 3...
+Joining thread 4...
+Joining thread 5...
+Joining thread 6...
+Joining thread 7...
+Joining thread 8...
+Joining thread 9...
+Workers joined
+Destructor fully executed
+
+
+Sat Jun 01 16:46:40 2024
+Workers: 2 | Loaders: 2 | Buckets: 10
+Loaded workers, work arrays, and work_flags
+Loaded loader arrays
+Loaded loaders
+Stop flag set
+Joining thread 0...
+Joining thread 1...
+Workers joined
+Destructor fully executed
+
+
+Sat Jun 01 16:46:43 2024
+Workers: 2 | Loaders: 2 | Buckets: 10
+Loaded workers, work arrays, and work_flags
+Loaded loader arrays
+Loaded loaders

@@ -9,10 +9,10 @@ TaskHandler::TaskHandler(int workerCount, int loaderCount, int bucketSize)
 
 //Full Constructor
 TaskHandler::TaskHandler(int workerCount, int loaderCount, int bucketSize, bool doLogging)
-        : num_workers{workerCount}, num_loaders{loaderCount}, bucket_size(bucketSize), logger_flag{doLogging},
-          stop_flag{false}, loader_cvs{}, loaders{}, workers{} {
+        : num_workers{workerCount}, num_loaders{loaderCount}, bucket_size(bucketSize), is_logging{doLogging},
+          is_stopped{false}, loaders{}, workers{} {
 
-    if (logger_flag) {
+    if (is_logging) {
         loadLogger(); //Loads logging system
     }
 
@@ -29,20 +29,20 @@ TaskHandler::~TaskHandler() {
                 loaders[i].join();
             }
         }
-    } else if (logger_flag.load(std::memory_order_relaxed)) {
+    } else if (is_logging.load(std::memory_order_relaxed)) {
         std::lock_guard lock(logger_mtx);
         logger << "Loaders never initialized" << std::endl;
     }
     //Flag to stop workers
-    stop_flag.store(true);
+    is_stopped.store(true);
 
-    if (logger_flag.load(std::memory_order_relaxed)) {
+    if (is_logging.load(std::memory_order_relaxed)) {
         logger << "Stop flag set" << std::endl;
     }
     int ID = 0;
 
     for (auto &worker: workers) {
-        if (logger_flag.load(std::memory_order_relaxed)) {
+        if (is_logging.load(std::memory_order_relaxed)) {
             logger << "Joining thread " << ID << "..." << std::endl;
         }
         if (worker.joinable()) {
@@ -50,11 +50,11 @@ TaskHandler::~TaskHandler() {
         }
         ID++;
     }
-    if (logger_flag.load(std::memory_order_relaxed)) {
+    if (is_logging.load(std::memory_order_relaxed)) {
         logger << "Workers joined" << std::endl;
     }
 
-    if (logger_flag.load(std::memory_order_relaxed)) {
+    if (is_logging.load(std::memory_order_relaxed)) {
         logger << "Destructor fully executed" << std::endl;
         logger.close();
     }
@@ -68,7 +68,7 @@ void TaskHandler::LoadingBay(WorldMap &map) {
         }
     }
 
-    if (logger_flag) {
+    if (is_logging) {
         logger << "Loaded loaders" << std::endl;
     }
 }
@@ -101,11 +101,11 @@ void TaskHandler::loadMapTasks(WorldMap &map, int ID) {
         if (row == bucket_size) { //End of bucket
 //            int iter = 0;
 
-            while (working_flag[ID].load(std::memory_order_relaxed)) { //While worker is working - flag is true
+            while (is_working[ID].load(std::memory_order_relaxed)) { //While worker is working - flag is true
                 std::this_thread::sleep_for(std::chrono::nanoseconds(1));
             }
             work_arrays[ID] = std::move(load_arrays[ID]);
-            working_flag[ID].store(true, std::memory_order_relaxed);
+            is_working[ID].store(true, std::memory_order_relaxed);
             load_arrays[ID].resize(bucket_size);
             //Worker should now start working
             row = 0;
@@ -121,8 +121,8 @@ void TaskHandler::loadWorkers() {
 
 
     std::vector<std::atomic<bool>> temp(num_workers);
-    working_flag.swap(temp); //atomics can't be moved...
-    for (auto &flag: working_flag) {
+    is_working.swap(temp); //atomics can't be moved...
+    for (auto &flag: is_working) {
         flag.store(false, std::memory_order_relaxed);
     } //all working_flags are false
 
@@ -130,7 +130,7 @@ void TaskHandler::loadWorkers() {
         workers.emplace_back([this, i]() { this->workerThread(i); });
     }
 
-    if (logger_flag) {
+    if (is_logging) {
         logger << "Loaded workers, work arrays, and work_flags\n";
     }
 
@@ -141,7 +141,7 @@ void TaskHandler::loadLoaderArrays() {
     for (int i = 0; i < num_loaders; i++) {
         load_arrays[i].resize(bucket_size); //
     }
-    if (logger_flag.load(std::memory_order_relaxed)) {
+    if (is_logging.load(std::memory_order_relaxed)) {
         std::lock_guard lock(logger_mtx);
         logger << "Loaded loader arrays" << std::endl;
     }
@@ -151,7 +151,7 @@ void TaskHandler::loadLogger() {
     std::string logName = "HandlerLog.txt";
     logger.open(logName, std::fstream::app);
     if (!logger.is_open()) {
-        logger_flag = false;
+        is_logging = false;
         std::cout << "Unable to open " << logName << std::endl;
     } else {
         std::chrono::time_point currTime = std::chrono::system_clock::now();
@@ -165,17 +165,17 @@ void TaskHandler::loadLogger() {
 
 void TaskHandler::workerThread(int ID) {
 
-    while (!stop_flag.load(std::memory_order_relaxed)) {
+    while (!is_stopped.load(std::memory_order_relaxed)) {
         int iter = 0;
         //While corresponding flag is false (default) & < 0.1 ms of wait
-        while (!working_flag[ID].load(std::memory_order_relaxed) && iter < 100000) {
+        while (!is_working[ID].load(std::memory_order_relaxed) && iter < 100000) {
             std::this_thread::sleep_for(std::chrono::nanoseconds(1));
             iter++;
         }
         if (iter >= 100000) { //Waiting function to not waste resources.
-            while (!working_flag[ID].load(std::memory_order_relaxed)) {
+            while (!is_working[ID].load(std::memory_order_relaxed)) {
                 std::this_thread::sleep_for(std::chrono::microseconds(1));
-                if (stop_flag.load(std::memory_order_relaxed)) {
+                if (is_stopped.load(std::memory_order_relaxed)) {
                     return;
                 }
             }
@@ -186,7 +186,7 @@ void TaskHandler::workerThread(int ID) {
         for (auto &task: work_arrays[ID]) {
             task->execute(); //check if null? If array not full
         }
-        working_flag[ID].store(false, std::memory_order_relaxed);
+        is_working[ID].store(false, std::memory_order_relaxed);
     }
 
 }

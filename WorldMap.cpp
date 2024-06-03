@@ -4,10 +4,10 @@
 WorldMap::WorldMap() : WorldMap(1000) {} //multiple of chunk_size <- change how this works
 
 WorldMap::WorldMap(int size)
-        : map{}, map_size{size}, lookX{0}, lookY{0}, screen_size{35}, initialized{false}, chunk_size{100} {
+        : map{}, map_size{size}, lookX{0}, lookY{0}, screen_size{35}, initialized{false}, num_chunks{100} {
 
     map.resize(map_size, std::vector<terrain>(map_size, BLANK)); //Map default
-    num_chunks = size * size / chunk_size / chunk_size;
+    chunk_size = sqrt(size * size / num_chunks);
     spawnRandomzier(lookX, lookY);
 }
 

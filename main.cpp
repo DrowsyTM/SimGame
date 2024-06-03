@@ -28,9 +28,9 @@ int forestAmount = 0;
 int GameTick();
 
 
-void ProfileFunctions(int workers, int loaders, int bucket_size) {
+void ProfileFunctions(int workers, int loaders, int bucket_size, int map_size) {
 
-    const int iterations = 1000;
+    const int iterations = 100;
     double time = 0; //ms
 
     string input;
@@ -42,7 +42,10 @@ void ProfileFunctions(int workers, int loaders, int bucket_size) {
     auto timeNow = system_clock::to_time_t(currTime); //C++11 tho, where is C++20, formatting?
     ofstream logFile("profileLog.txt", fstream::app);
 
-    logFile << "[ " << input << " ]" << "\n" << ctime(&timeNow) << "\n";
+    logFile << "[ " << input << " ]" << "\n" << ctime(&timeNow);
+    logFile << "Iterations: " << iterations << endl;
+    logFile << "Map Side: " << map_size << " | Total: " << map_size * map_size << endl;
+    logFile << workers << " Workers, " << loaders << " Loaders, " << bucket_size << " Bucket Size\n" << endl;
 
     auto start = high_resolution_clock::now();
     auto stop = high_resolution_clock::now();
@@ -59,7 +62,7 @@ void ProfileFunctions(int workers, int loaders, int bucket_size) {
     //Profile Map Draw
 //    start = high_resolution_clock::now();
 //    for (int i = 0; i < iterations; i++) {
-//        static WorldMap test;
+//        static WorldMap test(map_size);
 //        test.draw();
 //    }
 //    stop = high_resolution_clock::now();
@@ -92,7 +95,7 @@ void ProfileFunctions(int workers, int loaders, int bucket_size) {
     //Profile Threaded Map Generation
     total = 0;
     for (int i = 0; i < iterations; i++) {
-        WorldMap test;
+        WorldMap test(map_size);
         {
             TaskHandler tester(workers, loaders, bucket_size);
             start = high_resolution_clock::now();
@@ -107,10 +110,9 @@ void ProfileFunctions(int workers, int loaders, int bucket_size) {
     logFile.close();
 }
 
-
 int main() { //Wait I've been calling map.draw() this whole time but this could cause read/write race conditions?
 
-    ProfileFunctions(10, 10, 100);
+    ProfileFunctions(1, 1, 100, 10000);
 //    WorldMap map;
 //    {
 //        TaskHandler tasker(2, 2, 10, true);

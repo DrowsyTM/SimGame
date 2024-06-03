@@ -12,6 +12,7 @@
 #include <fstream>
 #include <chrono>
 
+
 class TaskHandler {
 public:
     TaskHandler();
@@ -30,24 +31,35 @@ public:
 //    void waitOnEmpty();
 
 private:
+    using Thread = std::jthread;
+    using TaskPtr = std::unique_ptr<Task>;
+    using TaskBatch = std::vector<TaskPtr>;
+    using Flag = std::atomic<bool>;
+
+
+    struct Batch { //So do we just use a linked list sort of system. Or do we have a vector that can be iterated?
+        TaskBatch tasks;
+        Batch* next = nullptr;
+    };
+
     int num_workers; // equivalent to # of buckets
-    std::vector<std::jthread> workers; // collects worker threads
-    std::vector<std::vector<std::unique_ptr<Task>>> work_arrays; // Buckets for each worker
-    std::vector<std::atomic<bool>> working_flag; //single flag for each bucket
+    std::vector<Thread> workers; // collects worker threads
+    std::vector<TaskBatch> work_arrays; // Buckets for each worker
+    std::vector<Flag> is_working; //single flag for each bucket
+    std::vector<Flag> is_loaded;
 
     int num_loaders;
-    std::vector<std::jthread> loaders;
-    std::vector<std::vector<std::unique_ptr<Task>>> load_arrays;
-    std::vector<std::condition_variable> loader_cvs; //Corresponds to each loader
+    std::vector<Thread> loaders;
+    std::vector<TaskBatch> load_arrays;
 
     //In fact, multiple loaders can load up muliple different load arrays and then just send
     // it to the first available worker. Implement this later, currently 1:1
 
-    std::mutex logger_mtx;
     int bucket_size;
-    std::atomic<bool> stop_flag;
-    std::atomic<bool> logger_flag;
+    Flag is_stopped;
+    Flag is_logging;
     std::fstream logger;
+    std::mutex logger_mtx;
 
     void workerThread(int ID);
 
