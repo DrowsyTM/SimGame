@@ -36,11 +36,7 @@ private:
     using TaskBatch = std::vector<TaskPtr>;
     using Flag = std::atomic<bool>;
 
-
-    struct Batch { //So do we just use a linked list sort of system. Or do we have a vector that can be iterated?
-        TaskBatch tasks;
-        Batch* next = nullptr;
-    };
+    //Okay so cache locality? Flattening
 
     int num_workers; // equivalent to # of buckets
     std::vector<Thread> workers; // collects worker threads
@@ -74,13 +70,30 @@ private:
     //New funcs
 
     //   1:1    holds batches   batches     item in batch
-    std::vector<std::vector<std::vector<std::unique_ptr<Task>>>> wArray;
+    std::vector<std::vector<std::vector<TaskBatch>>> work_array_u;
+    std::vector<std::atomic<int>> working_index; // Just do bounds checking. If = 9, set 0, otherwise iterate
+    std::vector<std::atomic<int>> end_index;
 
-    //yeah I've been thinking and it does seem like the main limitation right now is that Worker can't work while loader
-    //swaps. If we use three vectors instead of two for this, it would actually be much better. The flag could flip to
-    //show which vector it is active in.
+    // The vector of TaskBatches is fixed in size. If worker hits "end" index, checks it again.
+    // Then works through TaskBatches until it hits the end again(doesn't check until then).
+    // Depending on the number of loaders, they are responsible for loading a certain # of workers.
+    // 2 Loader 10 Worker means first loader does first 5, second does latter 5.
+    // Loaders load batches with minimum size(lets say 10) into the batch vector. Keep doing this until all workers are
+    // Caught up with work. If workers work faster than loaders load(we measure this somehow), we output this to log
+    // In future, dynamically increase loader count until its just about filling up in time.
+    // For loaders, we can start with 1/2 and keep iterating by one until balanced. For batch size, start at 10 and double?
+    // Wait... we do doubling after filling up on loaders or what?
+    // Wait... how do we track # of batches left in a bucket?
+    // Also, what if after all buckets are filled, loader just fills batch until one opens up? no, this needs constant checks,
+    // also all would go to first worker to finish
+    // And if tasks are evenly distributed, we can just distribute without too many checks.
+    // Dangerous if worker is so backed up loader just overwrites uncompleted tasks.
+    // Ooh when worker checks for end index, it also saves its current index?
+
+
     // Create a "step through" or visualization system that lets me work on this better? Just want to see which threads
     // are active and which are inactive(we want inactive to approach 0)
+    // Throughput
 
     //ehh figure this out on paper. I want rare/minimal interactions and NO DELAYS(so keep adding loaders till delay = 0)
     //I could just do this manually for the terrain gen, but I want it to work with all Tasks
