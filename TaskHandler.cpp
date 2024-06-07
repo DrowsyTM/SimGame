@@ -10,14 +10,15 @@ TaskHandler::TaskHandler(int workerCount, int loaderCount, int bucketSize)
 //Full Constructor
 TaskHandler::TaskHandler(int workerCount, int loaderCount, int bucketSize, bool doLogging)
         : num_workers{workerCount}, num_loaders{loaderCount}, bucket_size(bucketSize), is_logging{doLogging},
-          is_stopped{false}, loaders{}, workers{} {
+          is_stopped{false}, loaders{}, workers{}, end_indexes{}, working_indexes{} {
+
+
+    //Remove all args except for doLogging in the future.
 
     if (is_logging) {
         loadLogger(); //Loads logging system
     }
-
     loadWorkers(); //Loads workers and work_arrays
-    loadLoaderArrays(); //Load load_arrays
 }
 
 TaskHandler::~TaskHandler() {
@@ -77,54 +78,68 @@ void TaskHandler::LoadingBay(WorldMap &map) {
 
 
 void TaskHandler::loadMapTasks(WorldMap &map, int ID) {
-    // chunkCount is how many chunks will be loaded by this loader
-    int chunkCount = map.numChunks() / num_loaders;
-    int start = chunkCount * ID;
-    int end = start + chunkCount;
+    // I think the structure of this makes sense more this way:
+    // This func calls a func of world map that lets it distribute chunks.
+    // this func can determine # of chunks, or just how many workers to split to
+    // Then it works like a "GetNext func" returning a start_chunk chunk or something.
+    // This would look cleaner and more modular.
+
+    // ehh for now lets not break what works well, but later worldmap shouldn't care about chunks
+    // Or we create a full on chunk system for updates as well.
+
+    // chunks_per_loader is how many chunks will be loaded by this loader
+    int chunks_per_loader = map.getNumChunks() / num_loaders;
+    int start_chunk = chunks_per_loader * ID;
+    int end_chunk = start_chunk + chunks_per_loader;
     if (ID == num_loaders - 1) {
-        end = map.numChunks();
+        end_chunk = map.getNumChunks();
     }
     //ID corresponds to bucket
 
-    //For amount = 250, ID is 0-9
-    //0-249, 250-499, 500-749 ... 2250-2499
-    int row = 0;
-
-    //Ok first of all we don't account for the for loop ending before we give the last Tasks
-    // We have some ungenerated chunks, this might be why multithreading seems to break at the very end.
-    // ye what if bucket_size is > than the amount of chunks
-    for (int chunk = start; chunk < end; chunk++) {
-        if (row != bucket_size) { //Not at end of bucket
-            load_arrays[ID][row] = std::make_unique<TaskTerrainGen>(chunk, &map);
-            row++; //Iterate bucket row
-        }
-        if (row == bucket_size) { //End of bucket
-//            int iter = 0;
-
-            while (is_working[ID].load(std::memory_order_relaxed)) { //While worker is working - flag is true
-                std::this_thread::sleep_for(std::chrono::nanoseconds(1));
-            }
-            work_arrays[ID] = std::move(load_arrays[ID]);
-            is_working[ID].store(true, std::memory_order_relaxed);
-            load_arrays[ID].resize(bucket_size);
-            //Worker should now start working
-            row = 0;
+    std::vector<int> corresponding_workers;
+    for (int i = 0; i < num_workers; i + num_loaders) {
+        if (ID + i < num_workers) {
+            corresponding_workers.emplace_back(ID + i);
         }
     }
+
+    //For amount = 250, ID is 0-9
+    //0-249, 250-499, 500-749 ... 2250-2499
+
+    int batch_size = 10;
+    TaskBatch batch();
+
+    for (int chunk = start_chunk; chunk < end_chunk; chunk++) {
+//        batch.emplace_back(std::make_unique<TaskTerrainGen>(chunk, map));
+    }
+
 }
 
 void TaskHandler::loadWorkers() {
-    work_arrays.resize(num_workers);
+    work_array.resize(num_workers); //Resize outer vector to # of buckets
     for (int i = 0; i < num_workers; i++) {
-        work_arrays[i].resize(bucket_size); //
+        work_array[i].resize(bucket_size); //Resize 1 depth vector to # of batches per bucket
     } //Fill up the first vec with empty Task pointer vecs.
+    //For the third layer of the vector, size of Batches can be changed runtime
 
+    //Further functionality means # of workers can change as well.
 
-    std::vector<std::atomic<bool>> temp(num_workers);
-    is_working.swap(temp); //atomics can't be moved...
-    for (auto &flag: is_working) {
-        flag.store(false, std::memory_order_relaxed);
-    } //all working_flags are false
+    {
+        std::vector<std::atomic<int>> temp(num_workers);
+        for (int i = 0; i < num_workers; i++) {
+            temp[i] = 0;
+        }
+        end_indexes.swap(temp);
+    }
+
+    {
+        std::vector<std::atomic<int>> temp(num_workers);
+        for (int i = 0; i < num_workers; i++) {
+            temp[i] = 0;
+        }
+        working_indexes.swap(temp);
+    }
+
 
     for (int i = 0; i < num_workers; i++) {
         workers.emplace_back([this, i]() { this->workerThread(i); });
@@ -134,17 +149,6 @@ void TaskHandler::loadWorkers() {
         logger << "Loaded workers, work arrays, and work_flags\n";
     }
 
-}
-
-void TaskHandler::loadLoaderArrays() {
-    load_arrays.resize(num_loaders);
-    for (int i = 0; i < num_loaders; i++) {
-        load_arrays[i].resize(bucket_size); //
-    }
-    if (is_logging.load(std::memory_order_relaxed)) {
-        std::lock_guard lock(logger_mtx);
-        logger << "Loaded loader arrays" << std::endl;
-    }
 }
 
 void TaskHandler::loadLogger() {
@@ -192,6 +196,42 @@ void TaskHandler::workerThread(int ID) {
 }
 
 /** TODO
+ *
+    //Currently just set up the batch system with no dynamic changes.
+
+    //Each loading thread has its own internal buffer of batches. (And of indices they are in charge of?
+    //Ohh we can have a metric of how back up it is? Like, goal is 10 at most backed up, and we increase batch size to match.
+    //We increase batch size when we have a consistent queue. Otherwise, we increase/decrease loader count?
+    //We might need to detach threads and use stop tokens?
+
+    // The vector of TaskBatches is fixed in size. If worker hits "end" index, checks it again.
+    // Then works through TaskBatches until it hits the end again(doesn't check until then).
+    // Depending on the number of loaders, they are responsible for loading a certain # of workers.
+    // 2 Loader 10 Worker means first loader does first 5, second does latter 5.
+    // Loaders load batches with minimum size(lets say 10) into the batch vector. Keep doing this until all workers are
+    // Caught up with work. If workers work faster than loaders load(we measure this somehow), we output this to log
+    // In future, dynamically increase loader count until its just about filling up in time.
+    // For loaders, we can start with 1/2 and keep iterating by one until balanced. For batch size, start at 10 and double?
+    // Wait... we do doubling after filling up on loaders or what?
+    // Wait... how do we track # of batches left in a bucket?
+    // Also, what if after all buckets are filled, loader just fills batch until one opens up? no, this needs constant checks,
+    // also all would go to first worker to finish
+    // And if tasks are evenly distributed, we can just distribute without too many checks.
+    // Dangerous if worker is so backed up loader just overwrites uncompleted tasks.
+    // Ooh when worker checks for end index, it also saves its current index?
+
+    // Create a "step through" or visualization system that lets me work on this better? Just want to see which threads
+    // are active and which are inactive(we want inactive to approach 0)
+    // Throughput
+
+    //ehh figure this out on paper. I want rare/minimal interactions and NO DELAYS(so keep adding loaders till delay = 0)
+    //I could just do this manually for the terrain gen, but I want it to work with all Tasks
+    //We can easily estimate and split up work given map size. However, how do we optimize given an unknown /constant
+    //stream of tasks?
+ *
+ * Destructor shouldn't need to wait for threads. Threads should use memory-safe stopping procedure.
+ *
+ *
  * First of all, lets not change anything and optimize the system for 100k on 100k. Look at single threading.
  * Then use current system as benchmark for further changes.
  * Also changes to current: bucket_size needs to work regardless of size of map.
@@ -218,4 +258,6 @@ void TaskHandler::workerThread(int ID) {
  *
  * As seen from the log, bucket size up is good. The contention for atomic or the wait time is causing problems.
  * We probably want more loaders than workers, especially for super cheap tasks.
+ *
+ *
  */
