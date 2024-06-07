@@ -37,6 +37,7 @@ void WorldMap::threadGenerateTerrain(int chunk) {
     }
 }
 
+// Output player view to console
 void WorldMap::draw() const {
 
     std::stringstream ss;
@@ -72,6 +73,7 @@ void WorldMap::draw() const {
     std::cout << ss.str() << std::endl;
 }
 
+// Output full map to file
 void WorldMap::printMap() const {
 
     std::stringstream ss;
@@ -106,43 +108,54 @@ void WorldMap::printMap() const {
     std::cout << "Printed map to txt\n";
 }
 
+// Set a tile to specific terrain
 void WorldMap::set(terrain type, int x, int y) {
     map[y][x] = type;
 }
 
+// Returns on of map dimensions
 int WorldMap::size() const {
     return map_size;
 }
 
+// [Unimplemented] Sets world map to BLANK
 void WorldMap::clear() {
 
 }
 
+// Returns true if initialized is false
 bool WorldMap::isEmpty() const {
     return initialized;
 }
 
+// Returns lookX
 int WorldMap::x() const {
     return lookX;
 }
 
+// Returns lookY
 int WorldMap::y() const {
     return lookY;
 }
 
+// Returns chunk size (to be removed)
 int WorldMap::chunkSize() const {
     return chunk_size;
 }
 
-int WorldMap::numChunks() const {
+// Returns # chunks (to be removed)
+int WorldMap::getNumChunks() const {
     return num_chunks;
 }
 
+// Sets the map to initialized
 void WorldMap::setInitialized() {
     initialized = true;
 }
 
-//Private
+//----------Private
+
+//Randomly sets lookX & lookY on the map. 25% buffer from edge
 void WorldMap::spawnRandomzier(int &x, int &y) {
     // Randomness setup
     int center = map_size / 2;

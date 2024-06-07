@@ -44,7 +44,7 @@ public:
 
     int chunkSize() const;
 
-    int numChunks() const;
+    int getNumChunks() const;
 
     void setInitialized();
 
