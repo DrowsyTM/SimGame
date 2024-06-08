@@ -60,7 +60,7 @@ private:
 
     //   1:1    holds batches   batches     item in batch
     std::vector<std::vector<TaskBatch>> work_array;
-    std::vector<std::atomic<int>> working_indexes; // Just do bounds checking. If = 9, set 0, otherwise iterate
+    std::vector<std::atomic<int>> bucket_fullness; // Just do bounds checking. If = 9, set 0, otherwise iterate
     std::vector<std::atomic<int>> end_indexes; //both _index vectors have all values at 0
     int batch_size; //Current batch size. For now, constant.
     int bucket_size; //Bucket holds batches. Size 10.

@@ -10,7 +10,7 @@ TaskHandler::TaskHandler(int workerCount, int loaderCount, int bucketSize)
 //Full Constructor
 TaskHandler::TaskHandler(int workerCount, int loaderCount, int bucketSize, bool doLogging)
         : num_workers{workerCount}, num_loaders{loaderCount}, bucket_size(bucketSize), is_logging{doLogging},
-          is_stopped{false}, loaders{}, workers{}, end_indexes{}, working_indexes{} {
+          is_stopped{false}, loaders{}, workers{}, end_indexes{}, bucket_fullness{} {
 
 
     //Remove all args except for doLogging in the future.
@@ -87,16 +87,24 @@ void TaskHandler::loadMapTasks(WorldMap &map, int ID) {
     // ehh for now lets not break what works well, but later worldmap shouldn't care about chunks
     // Or we create a full on chunk system for updates as well.
 
-    // chunks_per_loader is how many chunks will be loaded by this loader
-    int chunks_per_loader = map.getNumChunks() / num_loaders;
-    int start_chunk = chunks_per_loader * ID;
-    int end_chunk = start_chunk + chunks_per_loader;
-    if (ID == num_loaders - 1) {
+    int chunk_iter; //Used for iterating in while loop. Starts at first chunk handled by current thread
+    int end_chunk; //Last chunk handled by thread
+
+
+    { // To free up chunks_per_loader
+        // chunks_per_loader is how many chunks will be loaded by this loader
+        int chunks_per_loader = map.getNumChunks() / num_loaders;
+        chunk_iter = chunks_per_loader * ID; //starting chunk
+        end_chunk = chunk_iter + chunks_per_loader;
+
+    }
+    if (ID == num_loaders - 1) { //If you're the last loader, you take rounding remainders
         end_chunk = map.getNumChunks();
     }
+
     //ID corresponds to bucket
 
-    std::vector<int> corresponding_workers;
+    std::vector<int> corresponding_workers; //Which worker threads are "loaded" by the current loader thread
     for (int i = 0; i < num_workers; i + num_loaders) {
         if (ID + i < num_workers) {
             corresponding_workers.emplace_back(ID + i);
@@ -107,10 +115,43 @@ void TaskHandler::loadMapTasks(WorldMap &map, int ID) {
     //0-249, 250-499, 500-749 ... 2250-2499
 
     int batch_size = 10;
-    TaskBatch batch();
+    int batch_counter = 0; //How full our current batch is
+    TaskBatch batch(batch_size);
+
+    std::vector<TaskBatch> batch_buffer(10); //If all worker queues are full of batches
+
+    int bucket_fullness_copy;
+    int end_index_copy; //Copies to minimize calls to atomic
+    int lowest_bucket_fullness;
+
+    while (true) {
+        if (batch_counter < batch_size) {
+            batch.emplace_back(std::make_unique<TaskTerrainGen>(start_chunk, &map));
+            batch_counter++;
+        } else {
+            batch_counter = 0;
+            lowest_bucket_fullness = num_workers; // 1 above max ID / bucket index
+
+            for (int ID: corresponding_workers) {
+                bucket_fullness_copy = bucket_fullness[ID].load(); //To prevent calling atomic twice
+                if (bucket_fullness_copy < lowest_bucket_fullness) { //Find least full worker bucket
+                    lowest_bucket_fullness = bucket_fullness_copy;
+                }
+            }
+            if (lowest_bucket_fullness != 10) { //Fullness = # of uncompleted/unknown status tasks
+
+            }
+            // rather than have an "end" index, we can track "length" from the working_index
+            // We will base this on the behavior of worker to mark its current index then work to the latest available
+            // index. This works well with looping the array
+        }
+
+        chunk_iter++;
+    }
 
     for (int chunk = start_chunk; chunk < end_chunk; chunk++) {
-//        batch.emplace_back(std::make_unique<TaskTerrainGen>(chunk, map));
+
+
     }
 
 }
@@ -137,7 +178,7 @@ void TaskHandler::loadWorkers() {
         for (int i = 0; i < num_workers; i++) {
             temp[i] = 0;
         }
-        working_indexes.swap(temp);
+        bucket_fullness.swap(temp);
     }
 
 
