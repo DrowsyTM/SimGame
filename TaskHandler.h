@@ -3,7 +3,6 @@
 
 #include <vector>
 #include <array>
-#include "WorldMap.h"
 #include "Task.h"
 #include <atomic>
 #include <condition_variable>
@@ -11,6 +10,7 @@
 #include <memory>
 #include <fstream>
 #include <chrono>
+
 
 
 class TaskHandler {
@@ -23,7 +23,9 @@ public:
 
     ~TaskHandler();
 
-    void LoadingBay(WorldMap &map);
+    void LoadingBay();
+
+    void shutdownThreads();
 
 //
 //    void taskMapGeneration(WorldMap& map);
@@ -37,14 +39,12 @@ private:
     using Flag = std::atomic<bool>;
 
     //Okay so cache locality? Flattening
-
-
-
     //In fact, multiple loaders can load up muliple different load arrays and then just send
     // it to the first available worker. Implement this later, currently 1:1
 
     Flag is_stopped;
     Flag is_logging;
+    Flag is_shutdown;
     std::fstream logger;
     std::mutex logger_mtx;
 
@@ -55,6 +55,7 @@ private:
     void loadWorkers();
 
     void loadLogger();
+
 
     //New funcs
 
@@ -70,7 +71,7 @@ private:
     std::vector<Thread> loaders;
     int num_loaders;
 
-
+    WorldMap map; //Figure out what to do with internal map? I guess if we handle all objects through UpdateHandler?
 };
 
 

@@ -8,6 +8,7 @@
 #include <random>
 #include <chrono>
 #include <fstream>
+#include "TaskHandler.h"
 
 enum terrain {
     PLAINS, FOREST, FCENTER, BLANK
@@ -54,6 +55,10 @@ public:
 
     void generateTerrain();
 
+    void setHandler(TaskHandler &handler);
+
+    void setHandlerDestroyed();
+
 private:
     std::vector<std::vector<terrain>> map;
     int map_size;
@@ -62,6 +67,9 @@ private:
     int chunk_size;
     int num_chunks;
     int look_x, look_y;
+
+    TaskHandler *handler_ptr;
+    bool is_handler_destroyed;
 
     void updateLayer();
 

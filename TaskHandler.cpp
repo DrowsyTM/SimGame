@@ -10,7 +10,7 @@ TaskHandler::TaskHandler(int workerCount, int loaderCount, int bucketSize)
 //Full Constructor
 TaskHandler::TaskHandler(int workerCount, int loaderCount, int bucketSize, bool doLogging)
         : num_workers{workerCount}, num_loaders{loaderCount}, bucket_max_capacity(bucketSize), is_logging{doLogging},
-          is_stopped{false}, loaders{}, workers{}, work_indexes{}, bucket_sizes{} {
+          is_stopped{false}, is_shutdown{false}, loaders{}, workers{}, work_indexes{}, bucket_sizes{} {
 
 
     //Remove all args except for doLogging in the future.
@@ -24,6 +24,19 @@ TaskHandler::TaskHandler(int workerCount, int loaderCount, int bucketSize, bool 
 TaskHandler::~TaskHandler() {
     //Loaders first currently so that workers finish all their work
     //Loaders finish on their own eventually
+
+    if (!is_shutdown) {
+        shutdownThreads();
+    }
+
+    if (is_logging.load(std::memory_order_relaxed)) {
+        logger << "Destructor fully executed" << std::endl;
+        logger.close();
+    }
+
+}
+
+void TaskHandler::shutdownThreads() {
     if (!loaders.empty()) {
         for (int i = 0; i < num_loaders; i++) {
             if (loaders[i].joinable()) {
@@ -55,14 +68,11 @@ TaskHandler::~TaskHandler() {
         logger << "Workers joined" << std::endl;
     }
 
-    if (is_logging.load(std::memory_order_relaxed)) {
-        logger << "Destructor fully executed" << std::endl;
-        logger.close();
-    }
-
+    map->setHandlerDestroyed();
+    is_shutdown.store(true);
 }
 
-void TaskHandler::LoadingBay(WorldMap &map) {
+void TaskHandler::LoadingBay() {
     if (loaders.empty()) { //doesn't make it work but prevents too many problems I think
         for (int i = 0; i < num_loaders; i++) {
             loaders.emplace_back([this, &map, i]() { loadMapTasks(map, i); });
@@ -156,7 +166,6 @@ void TaskHandler::loadMapTasks(WorldMap &map, int loader_id) {
                     // Honestly unsure if internal buffer is necessary tbh. Loader should just wait. If wait too long
                     // cull loader and give all tasks to other loader?
                 }
-
             } else {
                 batch_buffer.push_back(std::move(batch));
                 // Loader should log when it reaches 10 batches
@@ -236,22 +245,28 @@ void TaskHandler::loadLogger() {
 void TaskHandler::workerThread(int ID) {
 
     int batches_to_execute = 0;
-    while (!is_stopped.load(std::memory_order_relaxed)) {
-        batches_to_execute = bucket_sizes[ID].load();
+    int no_batches_count = 0;
+    int work_index = 0;
+    while (!is_stopped.load(std::memory_order_relaxed)) { //Don't really like that it leaves work incomplete
+        batches_to_execute = bucket_sizes[ID].load(std::memory_order_relaxed);
         if (batches_to_execute != 0) {
             for (int i = 0; i < batches_to_execute; i++) {
-
+                //update halfway? Or every 5 batches?
+                for (auto &task: work_array[ID][work_index + i]) {
+                    //Ensured WorldMap isn't destroyed between tasks
+                    task->execute();
+                }
             }
+        } else {
+            no_batches_count++;
         }
-
-
-        for (auto &task: work_arrays[ID]) {
-            task->execute(); //check if null? If array not full
-        }
-        is_working[ID].store(false, std::memory_order_relaxed);
     }
 
+    std::cout << "Thread " << ID << " no batch count: " << no_batches_count;
+
 }
+
+
 
 /** TODO
  *

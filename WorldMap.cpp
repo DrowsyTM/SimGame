@@ -4,7 +4,8 @@
 WorldMap::WorldMap() : WorldMap(1000) {} //multiple of chunk_size <- change how this works
 
 WorldMap::WorldMap(int size)
-        : map{}, map_size{size}, look_x{0}, look_y{0}, screen_size{35}, initialized{false}, num_chunks{100} {
+        : map{}, map_size{size}, look_x{0}, look_y{0}, screen_size{35}, initialized{false}, num_chunks{100},
+          is_handler_destroyed{false} {
 
     map.resize(map_size, std::vector<terrain>(map_size, BLANK)); //Map default
     chunk_size = sqrt(size * size / num_chunks);
@@ -13,7 +14,11 @@ WorldMap::WorldMap(int size)
 
 //Based on how many threads, we split up the entire map. Then we use start and end row for batch generation.
 
-WorldMap::~WorldMap() {}
+WorldMap::~WorldMap() {
+    if (!is_handler_destroyed){
+        handler_ptr->shutdownThreads();
+    }
+}
 
 // Non-threaded terrain generation
 void WorldMap::generateTerrain() {
@@ -153,6 +158,14 @@ void WorldMap::setInitialized() {
     initialized = true;
 }
 
+void WorldMap::setHandler(TaskHandler &handler) {
+    handler_ptr = &handler;
+}
+
+void WorldMap::setHandlerDestroyed() {
+    is_handler_destroyed = true;
+}
+
 //----------Private
 
 //Randomly sets look_x & look_y on the map. 25% buffer from edge
@@ -172,6 +185,9 @@ void WorldMap::spawnRandomzier(int &x, int &y) {
 
 //wtf is this function
 void WorldMap::updateLayer() {}
+
+
+
 
 
 
