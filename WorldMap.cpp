@@ -4,11 +4,11 @@
 WorldMap::WorldMap() : WorldMap(1000) {} //multiple of chunk_size <- change how this works
 
 WorldMap::WorldMap(int size)
-        : map{}, map_size{size}, lookX{0}, lookY{0}, screen_size{35}, initialized{false}, num_chunks{100} {
+        : map{}, map_size{size}, look_x{0}, look_y{0}, screen_size{35}, initialized{false}, num_chunks{100} {
 
     map.resize(map_size, std::vector<terrain>(map_size, BLANK)); //Map default
     chunk_size = sqrt(size * size / num_chunks);
-    spawnRandomzier(lookX, lookY);
+    spawnRandomzier(look_x, look_y);
 }
 
 //Based on how many threads, we split up the entire map. Then we use start and end row for batch generation.
@@ -41,10 +41,10 @@ void WorldMap::threadGenerateTerrain(int chunk) {
 void WorldMap::draw() const {
 
     std::stringstream ss;
-    int xOffset = lookX - (screen_size - 1) / 2;
-    int yOffset = lookY - (screen_size - 1) / 2;
+    int xOffset = look_x - (screen_size - 1) / 2;
+    int yOffset = look_y - (screen_size - 1) / 2;
 
-    ss << "[ " << lookX << ", " << lookY << " ]\n";
+    ss << "[ " << look_x << ", " << look_y << " ]\n";
     for (int y = 0; y < screen_size; y++) {
         for (int x = 0; x < screen_size; x++) {
             if (x == (screen_size - 1) / 2 && y == (screen_size - 1) / 2) {
@@ -128,14 +128,14 @@ bool WorldMap::isEmpty() const {
     return initialized;
 }
 
-// Returns lookX
+// Returns look_x
 int WorldMap::x() const {
-    return lookX;
+    return look_x;
 }
 
-// Returns lookY
+// Returns look_y
 int WorldMap::y() const {
-    return lookY;
+    return look_y;
 }
 
 // Returns chunk size (to be removed)
@@ -155,7 +155,7 @@ void WorldMap::setInitialized() {
 
 //----------Private
 
-//Randomly sets lookX & lookY on the map. 25% buffer from edge
+//Randomly sets look_x & look_y on the map. 25% buffer from edge
 void WorldMap::spawnRandomzier(int &x, int &y) {
     // Randomness setup
     int center = map_size / 2;

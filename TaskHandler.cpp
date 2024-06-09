@@ -9,8 +9,8 @@ TaskHandler::TaskHandler(int workerCount, int loaderCount, int bucketSize)
 
 //Full Constructor
 TaskHandler::TaskHandler(int workerCount, int loaderCount, int bucketSize, bool doLogging)
-        : num_workers{workerCount}, num_loaders{loaderCount}, bucket_size(bucketSize), is_logging{doLogging},
-          is_stopped{false}, loaders{}, workers{}, end_indexes{}, bucket_fullness{} {
+        : num_workers{workerCount}, num_loaders{loaderCount}, bucket_max_capacity(bucketSize), is_logging{doLogging},
+          is_stopped{false}, loaders{}, workers{}, work_indexes{}, bucket_sizes{} {
 
 
     //Remove all args except for doLogging in the future.
@@ -77,7 +77,7 @@ void TaskHandler::LoadingBay(WorldMap &map) {
 //---------------------PRIVATE----------------------------
 
 
-void TaskHandler::loadMapTasks(WorldMap &map, int ID) {
+void TaskHandler::loadMapTasks(WorldMap &map, int loader_id) {
     // I think the structure of this makes sense more this way:
     // This func calls a func of world map that lets it distribute chunks.
     // this func can determine # of chunks, or just how many workers to split to
@@ -94,72 +94,97 @@ void TaskHandler::loadMapTasks(WorldMap &map, int ID) {
     { // To free up chunks_per_loader
         // chunks_per_loader is how many chunks will be loaded by this loader
         int chunks_per_loader = map.getNumChunks() / num_loaders;
-        chunk_iter = chunks_per_loader * ID; //starting chunk
+        chunk_iter = chunks_per_loader * loader_id; //starting chunk
         end_chunk = chunk_iter + chunks_per_loader;
 
     }
-    if (ID == num_loaders - 1) { //If you're the last loader, you take rounding remainders
+    if (loader_id == num_loaders - 1) { //If you're the last loader, you take rounding remainders
         end_chunk = map.getNumChunks();
     }
 
-    //ID corresponds to bucket
+    //loader_id corresponds to bucket
 
     std::vector<int> corresponding_workers; //Which worker threads are "loaded" by the current loader thread
-    for (int i = 0; i < num_workers; i + num_loaders) {
-        if (ID + i < num_workers) {
-            corresponding_workers.emplace_back(ID + i);
+    for (int i = 0; i < num_workers; i + num_loaders) { //Round robin loading
+        if (loader_id + i < num_workers) {
+            corresponding_workers.emplace_back(loader_id + i);
         }
     }
 
-    //For amount = 250, ID is 0-9
-    //0-249, 250-499, 500-749 ... 2250-2499
-
     int batch_size = 10;
+    TaskBatch batch; //Vector of Task ptrs. Changes size by steps via some logic
+    batch.reserve(batch_size);
+    std::deque<TaskBatch> batch_buffer; //If worker queue is all full.
+
+
+    //Vars for while loop
+    int bucket_size_copy = -1; //Fullness = # of uncompleted/unknown status tasks
+    int smallest_bucket_size = -1; //Most empty size of bucket
+    int smallest_bucket_id = -1; //loader_id of the smallest bucket
+    int work_index_copy = -1; //Copies to minimize calls to atomic
     int batch_counter = 0; //How full our current batch is
-    TaskBatch batch(batch_size);
 
-    std::vector<TaskBatch> batch_buffer(10); //If all worker queues are full of batches
-
-    int bucket_fullness_copy;
-    int end_index_copy; //Copies to minimize calls to atomic
-    int lowest_bucket_fullness;
-
+    //Damn pretty overloaded system that breaks if we have more loaders than workers
     while (true) {
-        if (batch_counter < batch_size) {
-            batch.emplace_back(std::make_unique<TaskTerrainGen>(start_chunk, &map));
-            batch_counter++;
-        } else {
-            batch_counter = 0;
-            lowest_bucket_fullness = num_workers; // 1 above max ID / bucket index
+        // Maybe I should make a couple of batches and distrubute them
+        if (batch_counter >= batch_size || chunk_iter >= end_chunk) {
 
-            for (int ID: corresponding_workers) {
-                bucket_fullness_copy = bucket_fullness[ID].load(); //To prevent calling atomic twice
-                if (bucket_fullness_copy < lowest_bucket_fullness) { //Find least full worker bucket
-                    lowest_bucket_fullness = bucket_fullness_copy;
+            //Smallest bucket finder
+            smallest_bucket_size = num_workers;
+            for (int worker_id: corresponding_workers) { //For every worker this loader is in charge of
+                bucket_size_copy = bucket_sizes[worker_id].load(std::memory_order_relaxed); //Copy
+                if (bucket_size_copy < smallest_bucket_size) { //Find least full worker bucket
+                    smallest_bucket_size = bucket_size_copy;
+                    work_index_copy = work_indexes[worker_id].load(std::memory_order_relaxed);
+                    smallest_bucket_id = worker_id;
                 }
             }
-            if (lowest_bucket_fullness != 10) { //Fullness = # of uncompleted/unknown status tasks
 
+            // Batch move operations
+            if (smallest_bucket_size < batch_size) { //Not full bucket
+                // This line swaps our batch with the batch of our worker
+                if (batch_buffer.empty()) {
+                    work_array[smallest_bucket_id][(work_index_copy + bucket_size_copy) % 10].swap(batch);
+                    bucket_sizes[smallest_bucket_id].store(smallest_bucket_size + 1, std::memory_order_relaxed);
+                    batch_counter = 0;
+                    batch.clear();
+                } else {
+                    work_array[smallest_bucket_id][(work_index_copy + bucket_size_copy) % 10].swap(
+                            batch_buffer.front());
+                    batch_buffer.pop_front();
+                    // counter not reset so we try to input again
+                    // Honestly unsure if internal buffer is necessary tbh. Loader should just wait. If wait too long
+                    // cull loader and give all tasks to other loader?
+                }
+
+            } else {
+                batch_buffer.push_back(std::move(batch));
+                // Loader should log when it reaches 10 batches
+                batch_counter = 0;
             }
+
             // rather than have an "end" index, we can track "length" from the working_index
             // We will base this on the behavior of worker to mark its current index then work to the latest available
             // index. This works well with looping the array
+            // I need to do this in a way that minimizes simultaneous reads, but I want 24/7 uptime on workers
+            if (chunk_iter >= end_chunk && batch_buffer.empty()) {
+                // while loop break logic
+                break;
+            }
+        } else {
+            batch[batch_counter] = std::make_unique<TaskTerrainGen>(chunk_iter, &map);
+            batch_counter++;
+            chunk_iter++;
         }
-
-        chunk_iter++;
+        //End of loop
     }
-
-    for (int chunk = start_chunk; chunk < end_chunk; chunk++) {
-
-
-    }
-
+    //End of func
 }
 
 void TaskHandler::loadWorkers() {
     work_array.resize(num_workers); //Resize outer vector to # of buckets
     for (int i = 0; i < num_workers; i++) {
-        work_array[i].resize(bucket_size); //Resize 1 depth vector to # of batches per bucket
+        work_array[i].resize(bucket_max_capacity); //Resize 1 depth vector to # of batches per bucket
     } //Fill up the first vec with empty Task pointer vecs.
     //For the third layer of the vector, size of Batches can be changed runtime
 
@@ -170,7 +195,7 @@ void TaskHandler::loadWorkers() {
         for (int i = 0; i < num_workers; i++) {
             temp[i] = 0;
         }
-        end_indexes.swap(temp);
+        work_indexes.swap(temp);
     }
 
     {
@@ -178,7 +203,7 @@ void TaskHandler::loadWorkers() {
         for (int i = 0; i < num_workers; i++) {
             temp[i] = 0;
         }
-        bucket_fullness.swap(temp);
+        bucket_sizes.swap(temp);
     }
 
 
@@ -202,7 +227,7 @@ void TaskHandler::loadLogger() {
         std::chrono::time_point currTime = std::chrono::system_clock::now();
         auto timeNow = std::chrono::system_clock::to_time_t(currTime);
         logger << "\n\n" << ctime(&timeNow);
-        logger << "Workers: " << num_workers << " | Loaders: " << num_loaders << " | Buckets: " << bucket_size
+        logger << "Workers: " << num_workers << " | Loaders: " << num_loaders << " | Buckets: " << bucket_max_capacity
                << "\n";
     }
 
@@ -210,22 +235,14 @@ void TaskHandler::loadLogger() {
 
 void TaskHandler::workerThread(int ID) {
 
+    int batches_to_execute = 0;
     while (!is_stopped.load(std::memory_order_relaxed)) {
-        int iter = 0;
-        //While corresponding flag is false (default) & < 0.1 ms of wait
-        while (!is_working[ID].load(std::memory_order_relaxed) && iter < 100000) {
-            std::this_thread::sleep_for(std::chrono::nanoseconds(1));
-            iter++;
-        }
-        if (iter >= 100000) { //Waiting function to not waste resources.
-            while (!is_working[ID].load(std::memory_order_relaxed)) {
-                std::this_thread::sleep_for(std::chrono::microseconds(1));
-                if (is_stopped.load(std::memory_order_relaxed)) {
-                    return;
-                }
+        batches_to_execute = bucket_sizes[ID].load();
+        if (batches_to_execute != 0) {
+            for (int i = 0; i < batches_to_execute; i++) {
+
             }
         }
-        iter = 0;
 
 
         for (auto &task: work_arrays[ID]) {
@@ -275,7 +292,7 @@ void TaskHandler::workerThread(int ID) {
  *
  * First of all, lets not change anything and optimize the system for 100k on 100k. Look at single threading.
  * Then use current system as benchmark for further changes.
- * Also changes to current: bucket_size needs to work regardless of size of map.
+ * Also changes to current: bucket_max_capacity needs to work regardless of size of map.
  *
  * I suspect that the main delay is while the worker is waiting on the loader.
  * That's why bigger bucket leads to massive improvement
@@ -295,7 +312,7 @@ void TaskHandler::workerThread(int ID) {
  * Ability to clear the LoadingBay or Reuse loaders
  * Loop that just executes any function given to it? As a "hold thread" object or omsething
  * !!!Something to track when map is completed. The loaders or even the tasks could mark sections as "completed"
- * Can't have workers * bucket_size > map_size, no checks for end of chunks
+ * Can't have workers * bucket_max_capacity > map_size, no checks for end of chunks
  *
  * As seen from the log, bucket size up is good. The contention for atomic or the wait time is causing problems.
  * We probably want more loaders than workers, especially for super cheap tasks.

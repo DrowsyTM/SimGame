@@ -48,8 +48,8 @@ public:
 
     void setInitialized();
 
-    void threadGenerateTerrain(
-            int chunk); //or just add overload to generateTerrain that allows specification of where to gen
+    void threadGenerateTerrain(int chunk);
+    //or just add overload to generateTerrain that allows specification of where to gen
     //hmm should WorldMap track chunks for them? Or is this tracked in TaskHandler?
 
     void generateTerrain();
@@ -61,7 +61,7 @@ private:
     bool initialized;
     int chunk_size;
     int num_chunks;
-    int lookX, lookY;
+    int look_x, look_y;
 
     void updateLayer();
 
