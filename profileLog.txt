@@ -379,3 +379,75 @@ Avg tHandler Build Time: 	SKIP
 Avg tDestructor Time: 		0.04816 ms
 Avg ThreadedGen Time: 		156.271 ms
 
+[ Test with struct(cache isolation?) ]
+Tue Jun 04 15:10:58 2024
+Iterations: 100
+Map Side: 10000 | Total: 100000000
+10 Workers, 10 Loaders, 10 Bucket Size
+
+Avg WorldMap Build Time: 	SKIP
+Avg WorldMap Draw Time: 	SKIP
+Avg tHandler Build Time: 	SKIP
+Avg tDestructor Time: 		3.34067 ms
+Avg ThreadedGen Time: 		29.1659 ms
+
+[ Confirmation Test ]
+Tue Jun 04 15:11:34 2024
+Iterations: 100
+Map Side: 10000 | Total: 100000000
+10 Workers, 10 Loaders, 10 Bucket Size
+
+Avg WorldMap Build Time: 	SKIP
+Avg WorldMap Draw Time: 	SKIP
+Avg tHandler Build Time: 	SKIP
+Avg tDestructor Time: 		3.33217 ms
+Avg ThreadedGen Time: 		29.2814 ms
+
+[ Confirmation Test 2 ]
+Tue Jun 04 15:12:04 2024
+Iterations: 100
+Map Side: 10000 | Total: 100000000
+10 Workers, 10 Loaders, 10 Bucket Size
+
+Avg WorldMap Build Time: 	SKIP
+Avg WorldMap Draw Time: 	SKIP
+Avg tHandler Build Time: 	SKIP
+Avg tDestructor Time: 		3.34926 ms
+Avg ThreadedGen Time: 		28.3068 ms
+
+[ No struct ]
+Tue Jun 04 15:13:04 2024
+Iterations: 100
+Map Side: 10000 | Total: 100000000
+10 Workers, 10 Loaders, 10 Bucket Size
+
+Avg WorldMap Build Time: 	SKIP
+Avg WorldMap Draw Time: 	SKIP
+Avg tHandler Build Time: 	SKIP
+Avg tDestructor Time: 		3.16178 ms
+Avg ThreadedGen Time: 		29.0067 ms
+
+[ No struct 2 ]
+Tue Jun 04 15:13:34 2024
+Iterations: 100
+Map Side: 10000 | Total: 100000000
+10 Workers, 10 Loaders, 10 Bucket Size
+
+Avg WorldMap Build Time: 	SKIP
+Avg WorldMap Draw Time: 	SKIP
+Avg tHandler Build Time: 	SKIP
+Avg tDestructor Time: 		3.1975 ms
+Avg ThreadedGen Time: 		28.7044 ms
+
+[ No struct 3 ]
+Tue Jun 04 15:14:09 2024
+Iterations: 100
+Map Side: 10000 | Total: 100000000
+10 Workers, 10 Loaders, 10 Bucket Size
+
+Avg WorldMap Build Time: 	SKIP
+Avg WorldMap Draw Time: 	SKIP
+Avg tHandler Build Time: 	SKIP
+Avg tDestructor Time: 		3.17471 ms
+Avg ThreadedGen Time: 		29.0221 ms
+

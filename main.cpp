@@ -8,8 +8,6 @@
 #include <random> //Random generator
 #include <functional> //Used for bind function
 #include <format>
-
-#include "WorldMap.h"
 #include "TaskHandler.h"
 
 const int MAP_DIMENSION_UPPER_LIMIT = 15000;
@@ -28,101 +26,101 @@ int forestAmount = 0;
 int GameTick();
 
 
-void ProfileFunctions(int workers, int loaders, int bucket_size, int map_size) {
-
-    const int iterations = 100;
-    double time = 0; //ms
-
-    string input;
-    cout << "Custom Message:\n> ";
-    cin.sync();
-    getline(cin, input);
-
-    time_point currTime = system_clock::now();
-    auto timeNow = system_clock::to_time_t(currTime); //C++11 tho, where is C++20, formatting?
-    ofstream logFile("profileLog.txt", fstream::app);
-
-    logFile << "[ " << input << " ]" << "\n" << ctime(&timeNow);
-    logFile << "Iterations: " << iterations << endl;
-    logFile << "Map Side: " << map_size << " | Total: " << map_size * map_size << endl;
-    logFile << workers << " Workers, " << loaders << " Loaders, " << bucket_size << " Bucket Size\n" << endl;
-
-    auto start = high_resolution_clock::now();
-    auto stop = high_resolution_clock::now();
-
-    //Profile Map Constructor + Destructor
+//void ProfileFunctions(int workers, int loaders, int bucket_size, int map_size) {
+//
+//    const int iterations = 100;
+//    double time = 0; //ms
+//
+//    string input;
+//    cout << "Custom Message:\n> ";
+//    cin.sync();
+//    getline(cin, input);
+//
+//    time_point currTime = system_clock::now();
+//    auto timeNow = system_clock::to_time_t(currTime); //C++11 tho, where is C++20, formatting?
+//    ofstream logFile("profileLog.txt", fstream::app);
+//
+//    logFile << "[ " << input << " ]" << "\n" << ctime(&timeNow);
+//    logFile << "Iterations: " << iterations << endl;
+//    logFile << "Map Side: " << map_size << " | Total: " << map_size * map_size << endl;
+//    logFile << workers << " Workers, " << loaders << " Loaders, " << bucket_size << " Bucket Size\n" << endl;
+//
 //    auto start = high_resolution_clock::now();
-//    for (int i = 0; i < iterations; i++) {
-//        WorldMap test;
-//    }
 //    auto stop = high_resolution_clock::now();
-//    time = static_cast<double>(duration_cast<microseconds>(stop - start).count()) / 1000;
-    logFile << "Avg WorldMap Build Time: \tSKIP" << endl;
-
-    //Profile Map Draw
-//    start = high_resolution_clock::now();
+//
+//    //Profile Map Constructor + Destructor
+////    auto start = high_resolution_clock::now();
+////    for (int i = 0; i < iterations; i++) {
+////        WorldMap test;
+////    }
+////    auto stop = high_resolution_clock::now();
+////    time = static_cast<double>(duration_cast<microseconds>(stop - start).count()) / 1000;
+//    logFile << "Avg WorldMap Build Time: \tSKIP" << endl;
+//
+//    //Profile Map Draw
+////    start = high_resolution_clock::now();
+////    for (int i = 0; i < iterations; i++) {
+////        static WorldMap test(x_dimension);
+////        test.draw();
+////    }
+////    stop = high_resolution_clock::now();
+////    time = static_cast<double>(duration_cast<microseconds>(stop - start).count()) / 1000;
+//    logFile << "Avg WorldMap Draw Time: \tSKIP" << endl;
+//
+//    //Profile TaskHandler Builder
+////    start = high_resolution_clock::now();
+////    for (int i = 0; i < iterations; i++) {
+////        TaskHandler test(10, 10, 10);
+////    }
+////    stop = high_resolution_clock::now();
+////    time = static_cast<double>(duration_cast<microseconds>(stop - start).count()) / 1000;
+//    logFile << "Avg tHandler Build Time: \tSKIP" << endl;
+//
+//    //Profile destructor
+//    double total = 0;
 //    for (int i = 0; i < iterations; i++) {
-//        static WorldMap test(map_size);
-//        test.draw();
+//        {
+//            TaskHandler tester(workers, loaders, bucket_size);
+//            start = high_resolution_clock::now();
+//        }
+//        stop = high_resolution_clock::now();
+//        total += static_cast<double>(duration_cast<microseconds>(stop - start).count()) / 1000;
 //    }
-//    stop = high_resolution_clock::now();
-//    time = static_cast<double>(duration_cast<microseconds>(stop - start).count()) / 1000;
-    logFile << "Avg WorldMap Draw Time: \tSKIP" << endl;
-
-    //Profile TaskHandler Builder
-//    start = high_resolution_clock::now();
+//    double destructorTime = total / iterations;
+//    logFile << "Avg tDestructor Time: \t\t" << destructorTime << " ms" << endl;
+//
+//
+//    //Profile Threaded Map Generation
+//    total = 0;
 //    for (int i = 0; i < iterations; i++) {
-//        TaskHandler test(10, 10, 10);
+//        WorldMap test(map_size);
+//        {
+//            TaskHandler tester(workers, loaders, bucket_size);
+//            start = high_resolution_clock::now();
+//            tester.LoadingBay(test);
+//        }
+//        stop = high_resolution_clock::now();
+//        total += static_cast<double>(duration_cast<microseconds>(stop - start).count()) / 1000;
 //    }
-//    stop = high_resolution_clock::now();
-//    time = static_cast<double>(duration_cast<microseconds>(stop - start).count()) / 1000;
-    logFile << "Avg tHandler Build Time: \tSKIP" << endl;
-
-    //Profile destructor
-    double total = 0;
-    for (int i = 0; i < iterations; i++) {
-        {
-            TaskHandler tester(workers, loaders, bucket_size);
-            start = high_resolution_clock::now();
-        }
-        stop = high_resolution_clock::now();
-        total += static_cast<double>(duration_cast<microseconds>(stop - start).count()) / 1000;
-    }
-    double destructorTime = total / iterations;
-    logFile << "Avg tDestructor Time: \t\t" << destructorTime << " ms" << endl;
-
-
-    //Profile Threaded Map Generation
-    total = 0;
-    for (int i = 0; i < iterations; i++) {
-        WorldMap test(map_size);
-        {
-            TaskHandler tester(workers, loaders, bucket_size);
-            start = high_resolution_clock::now();
-            tester.LoadingBay(test);
-        }
-        stop = high_resolution_clock::now();
-        total += static_cast<double>(duration_cast<microseconds>(stop - start).count()) / 1000;
-    }
-    logFile << "Avg ThreadedGen Time: \t\t" << total / iterations - destructorTime << " ms" << endl;
-
-    logFile << endl;
-    logFile.close();
-}
+//    logFile << "Avg ThreadedGen Time: \t\t" << total / iterations - destructorTime << " ms" << endl;
+//
+//    logFile << endl;
+//    logFile.close();
+//}
 
 int main() { //Wait I've been calling map.draw() this whole time but this could cause read/write race conditions?
 
-    ProfileFunctions(1, 1, 100, 10000);
-//    WorldMap map;
-//    {
-//        TaskHandler tasker(2, 2, 10, true);
-//
-//
-//        tasker.LoadingBay(map);
-//
-//        this_thread::sleep_for(100ms);
-//        map.draw();
-//    }
+//    ProfileFunctions(10, 10, 10, 10000);
+
+    TaskHandler tasker(10, 10, 10);
+
+    WorldMap *map = tasker.getMap();
+    tasker.LoadingBay();
+    tasker.shutdownThreads();
+    map->draw(); //This isn't thread safe I don't think
+
+    //
+
 
 //    map.printMap(); //can't call this while map is being generated. I gotta figure out a restriction just in case;
 
@@ -204,9 +202,10 @@ void GenerateForest(const int x, const int y) {
 
 
 /** TODO
- Do loader stuff AND make it bit efficient
+ Make better destructor
 
- Get rid of logger when I actually get things working? check performance difference?
+ Better profiling, historical comparison?
+ Make logs in a specific folder
 
  Async might be a better way of doing some of my things.
 

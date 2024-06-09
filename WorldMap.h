@@ -8,7 +8,6 @@
 #include <random>
 #include <chrono>
 #include <fstream>
-#include "TaskHandler.h"
 
 enum terrain {
     PLAINS, FOREST, FCENTER, BLANK
@@ -23,9 +22,10 @@ private:
 class WorldMap {
 public:
     WorldMap(); //Uses default map size
-    WorldMap(int size);
 
     ~WorldMap();
+
+    void initializeObject(int map_x, int map_y);
 
     void draw() const;
 
@@ -55,23 +55,15 @@ public:
 
     void generateTerrain();
 
-    void setHandler(TaskHandler &handler);
-
-    void setHandlerDestroyed();
 
 private:
     std::vector<std::vector<terrain>> map;
-    int map_size;
+    int x_dimension, y_dimension;
     int screen_size;
     bool initialized;
     int chunk_size;
     int num_chunks;
     int look_x, look_y;
-
-    TaskHandler *handler_ptr;
-    bool is_handler_destroyed;
-
-    void updateLayer();
 
     void spawnRandomzier(int &x, int &y);
 };

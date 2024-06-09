@@ -12,7 +12,6 @@
 #include <chrono>
 
 
-
 class TaskHandler {
 public:
     TaskHandler();
@@ -26,6 +25,8 @@ public:
     void LoadingBay();
 
     void shutdownThreads();
+
+    WorldMap *getMap(); //Returns ptr to internal map
 
 //
 //    void taskMapGeneration(WorldMap& map);
@@ -50,7 +51,7 @@ private:
 
     void workerThread(int ID);
 
-    void loadMapTasks(WorldMap &map, int loader_id);
+    void loadMapTasks(int loader_id);
 
     void loadWorkers();
 
@@ -63,8 +64,8 @@ private:
     std::vector<std::vector<TaskBatch>> work_array;
     std::vector<std::atomic<int>> bucket_sizes; // Current bucket size(measured via how many tasks are unexecuted)
     std::vector<std::atomic<int>> work_indexes; //both _index vectors have all values at 0
-    int batch_size; //Current batch size. For now, constant.
     int bucket_max_capacity; //Bucket holds batches. Size 10.
+    int default_batch_size;
 
     std::vector<Thread> workers; // collects worker threads
     int num_workers; // equivalent to # of buckets

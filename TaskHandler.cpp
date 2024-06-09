@@ -10,10 +10,14 @@ TaskHandler::TaskHandler(int workerCount, int loaderCount, int bucketSize)
 //Full Constructor
 TaskHandler::TaskHandler(int workerCount, int loaderCount, int bucketSize, bool doLogging)
         : num_workers{workerCount}, num_loaders{loaderCount}, bucket_max_capacity(bucketSize), is_logging{doLogging},
-          is_stopped{false}, is_shutdown{false}, loaders{}, workers{}, work_indexes{}, bucket_sizes{} {
-
+          is_stopped{false}, is_shutdown{false}, loaders{}, workers{}, work_indexes{}, bucket_sizes{},
+          default_batch_size{10} {
 
     //Remove all args except for doLogging in the future.
+    if (num_loaders > num_workers) {
+        std::cout << "Loader count above worker count not supported yet\n";
+        num_loaders = num_workers;
+    }
 
     if (is_logging) {
         loadLogger(); //Loads logging system
@@ -68,14 +72,15 @@ void TaskHandler::shutdownThreads() {
         logger << "Workers joined" << std::endl;
     }
 
-    map->setHandlerDestroyed();
     is_shutdown.store(true);
 }
 
 void TaskHandler::LoadingBay() {
+    map.initializeObject(10000, -1);
+
     if (loaders.empty()) { //doesn't make it work but prevents too many problems I think
         for (int i = 0; i < num_loaders; i++) {
-            loaders.emplace_back([this, &map, i]() { loadMapTasks(map, i); });
+            loaders.emplace_back([this, i]() { loadMapTasks(i); });
         }
     }
 
@@ -84,10 +89,14 @@ void TaskHandler::LoadingBay() {
     }
 }
 
+WorldMap *TaskHandler::getMap() {
+    return &map;
+}
+
 //---------------------PRIVATE----------------------------
 
 
-void TaskHandler::loadMapTasks(WorldMap &map, int loader_id) {
+void TaskHandler::loadMapTasks(int loader_id) {
     // I think the structure of this makes sense more this way:
     // This func calls a func of world map that lets it distribute chunks.
     // this func can determine # of chunks, or just how many workers to split to
@@ -115,15 +124,22 @@ void TaskHandler::loadMapTasks(WorldMap &map, int loader_id) {
     //loader_id corresponds to bucket
 
     std::vector<int> corresponding_workers; //Which worker threads are "loaded" by the current loader thread
-    for (int i = 0; i < num_workers; i + num_loaders) { //Round robin loading
+    for (int i = 0; i < num_workers; i += num_loaders) { //Round robin loading
         if (loader_id + i < num_workers) {
             corresponding_workers.emplace_back(loader_id + i);
         }
     }
 
-    int batch_size = 10;
+    int batch_size = default_batch_size;
+    for (auto worker_id: corresponding_workers) {
+        for (int batch_index = 0; batch_index < bucket_max_capacity; batch_index++) {
+            work_array[worker_id][batch_index].resize(default_batch_size);
+        }
+    }
+
+
     TaskBatch batch; //Vector of Task ptrs. Changes size by steps via some logic
-    batch.reserve(batch_size);
+    batch.resize(batch_size);
     std::deque<TaskBatch> batch_buffer; //If worker queue is all full.
 
 
@@ -140,7 +156,7 @@ void TaskHandler::loadMapTasks(WorldMap &map, int loader_id) {
         if (batch_counter >= batch_size || chunk_iter >= end_chunk) {
 
             //Smallest bucket finder
-            smallest_bucket_size = num_workers;
+            smallest_bucket_size = bucket_max_capacity + 1;
             for (int worker_id: corresponding_workers) { //For every worker this loader is in charge of
                 bucket_size_copy = bucket_sizes[worker_id].load(std::memory_order_relaxed); //Copy
                 if (bucket_size_copy < smallest_bucket_size) { //Find least full worker bucket
@@ -157,7 +173,6 @@ void TaskHandler::loadMapTasks(WorldMap &map, int loader_id) {
                     work_array[smallest_bucket_id][(work_index_copy + bucket_size_copy) % 10].swap(batch);
                     bucket_sizes[smallest_bucket_id].store(smallest_bucket_size + 1, std::memory_order_relaxed);
                     batch_counter = 0;
-                    batch.clear();
                 } else {
                     work_array[smallest_bucket_id][(work_index_copy + bucket_size_copy) % 10].swap(
                             batch_buffer.front());
@@ -252,19 +267,27 @@ void TaskHandler::workerThread(int ID) {
         if (batches_to_execute != 0) {
             for (int i = 0; i < batches_to_execute; i++) {
                 //update halfway? Or every 5 batches?
-                for (auto &task: work_array[ID][work_index + i]) {
+                for (auto &task: work_array[ID][(work_index + i) % 10]) {
                     //Ensured WorldMap isn't destroyed between tasks
-                    task->execute();
+                    if (task != nullptr) { //At the end, we end up with having nullptr tasks. Strip them out?
+                        task->execute();
+                    }
+
                 }
+                bucket_sizes[ID]--;
+                work_index++;
             }
+            work_indexes[ID].store(work_index, std::memory_order_relaxed);
         } else {
             no_batches_count++;
         }
     }
 
-    std::cout << "Thread " << ID << " no batch count: " << no_batches_count;
+    std::cout << "Thread " << ID << " no batch count: " << no_batches_count << std::endl;
 
 }
+
+
 
 
 
@@ -327,7 +350,7 @@ void TaskHandler::workerThread(int ID) {
  * Ability to clear the LoadingBay or Reuse loaders
  * Loop that just executes any function given to it? As a "hold thread" object or omsething
  * !!!Something to track when map is completed. The loaders or even the tasks could mark sections as "completed"
- * Can't have workers * bucket_max_capacity > map_size, no checks for end of chunks
+ * Can't have workers * bucket_max_capacity > x_dimension, no checks for end of chunks
  *
  * As seen from the log, bucket size up is good. The contention for atomic or the wait time is causing problems.
  * We probably want more loaders than workers, especially for super cheap tasks.

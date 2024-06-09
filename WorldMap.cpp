@@ -1,33 +1,32 @@
 #include "WorldMap.h"
 
 //Public
-WorldMap::WorldMap() : WorldMap(1000) {} //multiple of chunk_size <- change how this works
-
-WorldMap::WorldMap(int size)
-        : map{}, map_size{size}, look_x{0}, look_y{0}, screen_size{35}, initialized{false}, num_chunks{100},
-          is_handler_destroyed{false} {
-
-    map.resize(map_size, std::vector<terrain>(map_size, BLANK)); //Map default
-    chunk_size = sqrt(size * size / num_chunks);
-    spawnRandomzier(look_x, look_y);
+WorldMap::WorldMap()
+        : map{}, look_x{0}, look_y{0}, screen_size{35}, num_chunks{100} {
 }
 
 //Based on how many threads, we split up the entire map. Then we use start and end row for batch generation.
 
 WorldMap::~WorldMap() {
-    if (!is_handler_destroyed){
-        handler_ptr->shutdownThreads();
-    }
+}
+
+void WorldMap::initializeObject(int map_x, int map_y) {
+    x_dimension = map_x;
+    y_dimension = x_dimension; //only care about squares for now
+
+    map.resize(y_dimension, std::vector<terrain>(x_dimension, BLANK)); //Map default
+    chunk_size = sqrt(x_dimension * y_dimension / num_chunks);
+    spawnRandomzier(look_x, look_y);
 }
 
 // Non-threaded terrain generation
 void WorldMap::generateTerrain() {
-    std::vector<terrain> terraVector(map_size, PLAINS);
-    map.resize(map_size, terraVector);// Fill with plains
+    std::vector<terrain> terraVector(x_dimension, PLAINS);
+    map.resize(x_dimension, terraVector);// Fill with plains
 }
 
 void WorldMap::threadGenerateTerrain(int chunk) {
-    int chunksDimension = map_size / chunk_size;
+    int chunksDimension = x_dimension / chunk_size;
 
     // Chunk 0-49 = 0-49 * 15
     int xOffset = (chunk % chunksDimension) * chunk_size;
@@ -84,8 +83,8 @@ void WorldMap::printMap() const {
     std::stringstream ss;
     std::ofstream output_file("map_output.txt", std::fstream::trunc);
 
-    for (int y = 0; y < map_size; y++) {
-        for (int x = 0; x < map_size; x++) {
+    for (int y = 0; y < x_dimension; y++) {
+        for (int x = 0; x < x_dimension; x++) {
 
             //Make this pairs with keys
             switch (map[y][x]) {
@@ -120,7 +119,7 @@ void WorldMap::set(terrain type, int x, int y) {
 
 // Returns on of map dimensions
 int WorldMap::size() const {
-    return map_size;
+    return x_dimension;
 }
 
 // [Unimplemented] Sets world map to BLANK
@@ -158,21 +157,13 @@ void WorldMap::setInitialized() {
     initialized = true;
 }
 
-void WorldMap::setHandler(TaskHandler &handler) {
-    handler_ptr = &handler;
-}
-
-void WorldMap::setHandlerDestroyed() {
-    is_handler_destroyed = true;
-}
-
 //----------Private
 
 //Randomly sets look_x & look_y on the map. 25% buffer from edge
 void WorldMap::spawnRandomzier(int &x, int &y) {
     // Randomness setup
-    int center = map_size / 2;
-    int halfMap = 0.25 * map_size;
+    int center = x_dimension / 2;
+    int halfMap = 0.25 * x_dimension;
     int halfToCenter = center - halfMap;
     int halfFromCenter = center + halfMap;
     std::default_random_engine randomGenerator(std::chrono::system_clock::now().time_since_epoch().count());
@@ -183,8 +174,7 @@ void WorldMap::spawnRandomzier(int &x, int &y) {
     y = spawnDistribution(randomGenerator);
 }
 
-//wtf is this function
-void WorldMap::updateLayer() {}
+
 
 
 
