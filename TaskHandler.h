@@ -24,6 +24,8 @@ public:
 
     void LoadingBay();
 
+    void initializeMap(int map_x, int map_y);
+
     void shutdownThreads();
 
     WorldMap *getMap(); //Returns ptr to internal map
@@ -39,31 +41,20 @@ private:
     using TaskBatch = std::vector<TaskPtr>;
     using Flag = std::atomic<bool>;
 
-    //Okay so cache locality? Flattening
-    //In fact, multiple loaders can load up muliple different load arrays and then just send
-    // it to the first available worker. Implement this later, currently 1:1
+    //
 
     Flag is_stopped;
-    Flag is_logging;
+
     Flag is_shutdown;
+    Flag is_logging;
     std::fstream logger;
     std::mutex logger_mtx;
-
-    void workerThread(int ID);
-
-    void loadMapTasks(int loader_id);
-
-    void loadWorkers();
-
-    void loadLogger();
-
-
-    //New funcs
 
     //   1:1    holds batches   batches     item in batch
     std::vector<std::vector<TaskBatch>> work_array;
     std::vector<std::atomic<int>> bucket_sizes; // Current bucket size(measured via how many tasks are unexecuted)
     std::vector<std::atomic<int>> work_indexes; //both _index vectors have all values at 0
+
     int bucket_max_capacity; //Bucket holds batches. Size 10.
     int default_batch_size;
 
@@ -73,6 +64,14 @@ private:
     int num_loaders;
 
     WorldMap map; //Figure out what to do with internal map? I guess if we handle all objects through UpdateHandler?
+
+    void workerThread(int ID);
+
+    void loadMapTasks(int loader_id);
+
+    void loadWorkers();
+
+    void loadLogger();
 };
 
 

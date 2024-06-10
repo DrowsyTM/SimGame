@@ -451,3 +451,15 @@ Avg tHandler Build Time: 	SKIP
 Avg tDestructor Time: 		3.17471 ms
 Avg ThreadedGen Time: 		29.0221 ms
 
+
+[ New N:N worker/loader system (*fixed) ]
+Sun Jun 09 18:33:26 2024
+Iterations: 100
+Map Side: 10000 | Total: 100000000
+10 Workers, 10 Loaders, 10 Bucket Size
+
+Avg tHandler Build Time: 	0.39612 ms
+Avg tDestructor Time: 		0.21106 ms
+Avg WorldMap init Time: 	110.567 ms
+Avg ThreadedGen Time: 		31.5384 ms
+

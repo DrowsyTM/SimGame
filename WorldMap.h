@@ -10,14 +10,14 @@
 #include <fstream>
 
 enum terrain {
-    PLAINS, FOREST, FCENTER, BLANK
+    DEFAULT, PLAINS, FOREST, FCENTER
 };
 
-class Tile {
-private:
-    terrain type;
-    int x, y;
-};
+//class Tile {
+//private:
+//    terrain type;
+//    int x, y;
+//};
 
 class WorldMap {
 public:
@@ -33,21 +33,9 @@ public:
 
     void set(terrain type, int x, int y);
 
-    int x() const;
-
-    int y() const;
-
     int size() const;
 
-    void clear();
-
-    bool isEmpty() const;
-
-    int chunkSize() const;
-
     int getNumChunks() const;
-
-    void setInitialized();
 
     void threadGenerateTerrain(int chunk);
     //or just add overload to generateTerrain that allows specification of where to gen
@@ -60,7 +48,6 @@ private:
     std::vector<std::vector<terrain>> map;
     int x_dimension, y_dimension;
     int screen_size;
-    bool initialized;
     int chunk_size;
     int num_chunks;
     int look_x, look_y;

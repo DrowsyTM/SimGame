@@ -12,9 +12,9 @@ WorldMap::~WorldMap() {
 
 void WorldMap::initializeObject(int map_x, int map_y) {
     x_dimension = map_x;
-    y_dimension = x_dimension; //only care about squares for now
+    y_dimension = map_y;
 
-    map.resize(y_dimension, std::vector<terrain>(x_dimension, BLANK)); //Map default
+    map.resize(y_dimension, std::vector<terrain>(x_dimension, DEFAULT)); //Map default
     chunk_size = sqrt(x_dimension * y_dimension / num_chunks);
     spawnRandomzier(look_x, look_y);
 }
@@ -78,10 +78,10 @@ void WorldMap::draw() const {
 }
 
 // Output full map to file
-void WorldMap::printMap() const {
+void WorldMap::printMap() const { //not thread safe, make sure threads are done before using
 
     std::stringstream ss;
-    std::ofstream output_file("map_output.txt", std::fstream::trunc);
+    std::ofstream output_file("Logs/map_output.txt", std::fstream::trunc);
 
     for (int y = 0; y < x_dimension; y++) {
         for (int x = 0; x < x_dimension; x++) {
@@ -117,45 +117,11 @@ void WorldMap::set(terrain type, int x, int y) {
     map[y][x] = type;
 }
 
-// Returns on of map dimensions
-int WorldMap::size() const {
-    return x_dimension;
-}
-
-// [Unimplemented] Sets world map to BLANK
-void WorldMap::clear() {
-
-}
-
-// Returns true if initialized is false
-bool WorldMap::isEmpty() const {
-    return initialized;
-}
-
-// Returns look_x
-int WorldMap::x() const {
-    return look_x;
-}
-
-// Returns look_y
-int WorldMap::y() const {
-    return look_y;
-}
-
-// Returns chunk size (to be removed)
-int WorldMap::chunkSize() const {
-    return chunk_size;
-}
-
 // Returns # chunks (to be removed)
 int WorldMap::getNumChunks() const {
     return num_chunks;
 }
 
-// Sets the map to initialized
-void WorldMap::setInitialized() {
-    initialized = true;
-}
 
 //----------Private
 

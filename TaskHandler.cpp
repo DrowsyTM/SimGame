@@ -75,8 +75,13 @@ void TaskHandler::shutdownThreads() {
     is_shutdown.store(true);
 }
 
+void TaskHandler::initializeMap(int map_x, int map_y) {
+    map.initializeObject(map_x, map_x); //Only squares implemented, ignore map_y
+}
+
+// separate the loading of loaders and the task generation(so we can time each step). Build it in timings?
 void TaskHandler::LoadingBay() {
-    map.initializeObject(10000, -1);
+    //initialize map should be here if not for the need to externally time the func
 
     if (loaders.empty()) { //doesn't make it work but prevents too many problems I think
         for (int i = 0; i < num_loaders; i++) {
@@ -242,7 +247,7 @@ void TaskHandler::loadWorkers() {
 }
 
 void TaskHandler::loadLogger() {
-    std::string logName = "HandlerLog.txt";
+    std::string logName = "Logs/HandlerLog.txt";
     logger.open(logName, std::fstream::app);
     if (!logger.is_open()) {
         is_logging = false;
@@ -260,11 +265,16 @@ void TaskHandler::loadLogger() {
 void TaskHandler::workerThread(int ID) {
 
     int batches_to_execute = 0;
-    int no_batches_count = 0;
+//    int no_batches_count = 0;
     int work_index = 0;
+    bool started_counting = false;
+
     while (!is_stopped.load(std::memory_order_relaxed)) { //Don't really like that it leaves work incomplete
         batches_to_execute = bucket_sizes[ID].load(std::memory_order_relaxed);
         if (batches_to_execute != 0) {
+//            if (!started_counting) {
+//                started_counting = true;
+//            }
             for (int i = 0; i < batches_to_execute; i++) {
                 //update halfway? Or every 5 batches?
                 for (auto &task: work_array[ID][(work_index + i) % 10]) {
@@ -278,12 +288,13 @@ void TaskHandler::workerThread(int ID) {
                 work_index++;
             }
             work_indexes[ID].store(work_index, std::memory_order_relaxed);
-        } else {
-            no_batches_count++;
         }
+//        else if (started_counting) {
+//            no_batches_count++; // ah we should start counting after first task?
+//        }
     }
 
-    std::cout << "Thread " << ID << " no batch count: " << no_batches_count << std::endl;
+//    std::cout << "Thread " << ID << " no batch count: " << no_batches_count << std::endl;
 
 }
 
